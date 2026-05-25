@@ -5,7 +5,7 @@ import {
   loadCustomBangs,
   parseCustomBangs,
 } from "./custom-bang";
-import "./global.css";
+import "virtual:uno.css";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 const LS_DEFAULT_BANG = localStorage.getItem("default-bang") ?? "g";
@@ -60,41 +60,41 @@ function downloadJson(filename: string, value: unknown) {
 function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
-    <div class="page-shell">
-      <div class="content-container">
+    <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+      <div class="max-w-[46rem] w-full text-center">
         <h1>Od*ck</h1>
         <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank">all of DuckDuckGo's bangs.</a></p>
-        <div class="url-container">
+        <div class="flex items-center gap-2 mt-4">
           <input
             type="text"
-            class="url-input"
+            class="px-3 py-2 border rounded w-full bg-[#f5f5f5] dark:(bg-[#191919] text-white)"
             value="${getSearchEngineUrl()}"
             readonly
           />
-          <button class="copy-button">
-            <img src="/clipboard.svg" alt="Copy" />
+          <button class="p-2 text-[#666] rounded transition-all duration-200 flex items-center justify-center hover:bg-[#f0f0f0] active:bg-[#e5e5e5] dark:(text-[#aaa] hover:bg-[#222] active:bg-[#333])" aria-label="Copy">
+            <span class="copy-icon i-ph-clipboard-duotone text-xl"></span>
           </button>
         </div>
-        <p style="margin-top: 4rem; margin-bottom: 0.5rem;">Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank">Raycast Quicklink</a>:</p>
-        <div class="url-container">
+        <p class="mt-16 mb-2">Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank">Raycast Quicklink</a>:</p>
+        <div class="flex items-center gap-2 mt-4">
           <input
             type="text"
-            class="url-input raycast-url-input"
+            class="px-3 py-2 border rounded w-full bg-[#f5f5f5] dark:(bg-[#191919] text-white)"
             value="${getRaycastQuicklinkUrl()}"
             readonly
           />
-          <button class="copy-button raycast-copy-button">
-            <img src="/clipboard.svg" alt="Copy" />
+          <button class="p-2 text-[#666] rounded transition-all duration-200 flex items-center justify-center hover:bg-[#f0f0f0] active:bg-[#e5e5e5] dark:(text-[#aaa] hover:bg-[#222] active:bg-[#333])" aria-label="Copy Raycast URL">
+            <span class="raycast-copy-icon i-ph-clipboard-duotone text-xl"></span>
           </button>
-          <button class="copy-button raycast-import-button" title="Import to Raycast">
-            <img src="/download.svg" alt="Import to Raycast" />
+          <button class="p-2 text-[#666] rounded transition-all duration-200 flex items-center justify-center hover:bg-[#f0f0f0] active:bg-[#e5e5e5] dark:(text-[#aaa] hover:bg-[#222] active:bg-[#333])" title="Import to Raycast" aria-label="Import to Raycast">
+            <span class="i-ph-download-simple-duotone text-xl"></span>
           </button>
         </div>
-        <p style="margin-top: 4rem;">
+        <p class="mt-16">
           <a href="/custom.html">Manage Custom Bangs →</a>
         </p>
       </div>
-      <footer class="footer">
+      <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
         <a href="https://x.com/kvoon_" target="_blank">kvoon3</a>
         •
         <a href="https://github.com/kvoon3/oduck" target="_blank">github</a>
@@ -102,33 +102,37 @@ function noSearchDefaultPageRender() {
     </div>
   `;
 
-  const copyButton = app.querySelector<HTMLButtonElement>(".copy-button")!;
-  const copyIcon = copyButton.querySelector("img")!;
-  const urlInput = app.querySelector<HTMLInputElement>(".url-input")!;
+  const copyButton = app.querySelector<HTMLButtonElement>('button[aria-label="Copy"]')!;
+  const copyIcon = copyButton.querySelector<HTMLSpanElement>(".copy-icon")!;
+  const copyUrlInput = copyButton.parentElement!.querySelector<HTMLInputElement>("input")!;
 
   copyButton.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(urlInput.value);
-    copyIcon.src = "/clipboard-check.svg";
+    await navigator.clipboard.writeText(copyUrlInput.value);
+    copyIcon.classList.remove("i-ph-clipboard-duotone");
+    copyIcon.classList.add("i-ph-check-fat-duotone");
 
     setTimeout(() => {
-      copyIcon.src = "/clipboard.svg";
+      copyIcon.classList.add("i-ph-clipboard-duotone");
+      copyIcon.classList.remove("i-ph-check-fat-duotone");
     }, 2000);
   });
 
-  const raycastCopyButton = app.querySelector<HTMLButtonElement>(".raycast-copy-button")!;
-  const raycastCopyIcon = raycastCopyButton.querySelector("img")!;
-  const raycastUrlInput = app.querySelector<HTMLInputElement>(".raycast-url-input")!;
+  const raycastCopyButton = app.querySelector<HTMLButtonElement>('button[aria-label="Copy Raycast URL"]')!;
+  const raycastCopyIcon = raycastCopyButton.querySelector<HTMLSpanElement>(".raycast-copy-icon")!;
+  const raycastUrlInput = raycastCopyButton.parentElement!.querySelector<HTMLInputElement>("input")!;
 
   raycastCopyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(raycastUrlInput.value);
-    raycastCopyIcon.src = "/clipboard-check.svg";
+    raycastCopyIcon.classList.remove("i-ph-clipboard-duotone");
+    raycastCopyIcon.classList.add("i-ph-check-fat-duotone");
 
     setTimeout(() => {
-      raycastCopyIcon.src = "/clipboard.svg";
+      raycastCopyIcon.classList.add("i-ph-clipboard-duotone");
+      raycastCopyIcon.classList.remove("i-ph-check-fat-duotone");
     }, 2000);
   });
 
-  const raycastImportButton = app.querySelector<HTMLButtonElement>(".raycast-import-button")!;
+  const raycastImportButton = app.querySelector<HTMLButtonElement>('button[aria-label="Import to Raycast"]')!;
 
   raycastImportButton.addEventListener("click", () => {
     const quicklink = [

@@ -2,7 +2,7 @@ import {
   type CustomBang,
   parseCustomBangs,
 } from "./custom-bang";
-import "./global.css";
+import "virtual:uno.css";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 
@@ -57,30 +57,30 @@ function downloadJson(filename: string, value: unknown) {
 
 function renderCustomBangList() {
   if (customBangs.length === 0) {
-    return `<p class="custom-bang-empty">No custom bangs yet.</p>`;
+    return `<p class="p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">No custom bangs yet.</p>`;
   }
 
   return `
-    <ul class="custom-bang-list">
+    <ul class="grid gap-2 list-none">
       ${customBangs
         .map(
           (bang, index) => `
-            <li class="custom-bang-item">
-              <label class="toggle-row" title="${bang.enabled === false ? "Disabled" : "Enabled"}">
+            <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3.5 px-4 py-3.5 border rounded bg-[#fafafa] lt-sm:grid-cols-[auto_1fr] dark:(bg-[#171717])">
+              <label class="flex items-center justify-center" title="${bang.enabled === false ? "Disabled" : "Enabled"}">
                 <input
-                  class="custom-bang-enabled-input"
+                  class="custom-bang-enabled-input w-4.5 h-4.5"
                   type="checkbox"
                   data-index="${index}"
                   ${bang.enabled === false ? "" : "checked"}
                 />
               </label>
-              <div class="custom-bang-details">
-                <strong>${escapeHtml(bang.s)}</strong>
-                <span>!${escapeHtml(bang.t)}</span>
+              <div class="flex items-baseline gap-2.5 min-w-0">
+                <strong class="min-w-0 truncate">${escapeHtml(bang.s)}</strong>
+                <span class="flex-none text-[#666] text-[13px] dark:text-[#aaa]">!${escapeHtml(bang.t)}</span>
               </div>
-              <div class="custom-bang-row-actions">
-                <button class="secondary-button edit-custom-bang-button" type="button" data-index="${index}">Edit</button>
-                <button class="danger-button remove-custom-bang-button" type="button" data-index="${index}">Remove</button>
+              <div class="flex gap-1.5 lt-sm:col-span-2 lt-sm:w-full">
+                <button class="btn-base border text-[#333] hover:bg-[#f0f0f0] dark:(text-[#ddd] hover:bg-[#222]) flex-1 edit-custom-bang-button" type="button" data-index="${index}">Edit</button>
+                <button class="btn-base text-[#b00020] hover:bg-[#f8e8ec] dark:(text-[#ff8a9a] hover:bg-[#2a171b]) flex-1 remove-custom-bang-button" type="button" data-index="${index}">Remove</button>
               </div>
             </li>
           `,
@@ -114,41 +114,41 @@ function persistCustomBangs(message?: string) {
 function render() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
-    <div class="page-shell">
-      <div class="content-container">
+    <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+      <div class="max-w-[46rem] w-full text-center">
         <h1>Custom Bangs</h1>
         <p>Create your own <code>!bang</code> shortcuts. <a href="/">← Back to Od*ck</a></p>
-        <section class="custom-bang-panel">
-          <div class="custom-bang-header">
-            <h2>Your Bangs</h2>
-            <div class="custom-bang-actions">
-              <button class="primary-button open-custom-bang-form-button" type="button">Add Bang</button>
-              <button class="secondary-button import-custom-bang-button" type="button">Import</button>
-              <button class="secondary-button export-custom-bang-button" type="button">Export</button>
+        <section class="mt-25 text-left">
+          <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
+            <h2 class="text-[22px]">Your Bangs</h2>
+            <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
+              <button class="btn-base bg-[#1a1a1a] text-white hover:bg-[#333] dark:(bg-[#f1f1f1] text-[#111] hover:bg-[#d8d8d8]) open-custom-bang-form-button lt-sm:flex-1" type="button">Add Bang</button>
+              <button class="btn-base border text-[#333] hover:bg-[#f0f0f0] dark:(text-[#ddd] hover:bg-[#222]) import-custom-bang-button lt-sm:flex-1" type="button">Import</button>
+              <button class="btn-base border text-[#333] hover:bg-[#f0f0f0] dark:(text-[#ddd] hover:bg-[#222]) export-custom-bang-button lt-sm:flex-1" type="button">Export</button>
             </div>
           </div>
-          <div class="custom-bang-list-container">${renderCustomBangList()}</div>
+          <div class="custom-bang-list-container mt-4.5">${renderCustomBangList()}</div>
           <input class="custom-bang-file-input" type="file" accept="application/json,.json" hidden />
-          <p class="custom-bang-status" aria-live="polite"></p>
+          <p class="custom-bang-status min-h-[21px] mt-2 text-sm text-[#555] dark:text-[#aaa]" aria-live="polite"></p>
         </section>
       </div>
-      <div class="custom-bang-modal" role="dialog" aria-modal="true" aria-labelledby="custom-bang-dialog-title" hidden>
-        <div class="custom-bang-modal-panel">
-          <div class="custom-bang-modal-header">
-            <h3 id="custom-bang-dialog-title">${getCustomBangDialogTitle()}</h3>
-            <button class="icon-button close-custom-bang-modal-button" type="button" aria-label="Close">×</button>
+      <div class="custom-bang-modal fixed inset-0 z-10 flex items-center justify-center p-5 bg-[rgb(0_0_0_/_0.35)] dark:bg-[rgb(0_0_0_/_0.6)]" role="dialog" aria-modal="true" aria-labelledby="custom-bang-dialog-title" hidden>
+        <div class="w-[min(100%,34rem)] p-5 border rounded-md bg-white shadow-[0_16px_40px_rgb(0_0_0_/_0.18)] dark:(bg-[#131313])">
+          <div class="flex items-center justify-between gap-4">
+            <h3 id="custom-bang-dialog-title" class="text-[18px]">${getCustomBangDialogTitle()}</h3>
+            <button class="close-custom-bang-modal-button flex items-center justify-center w-8 h-8 rounded text-[#555] text-2xl leading-none hover:bg-[#f0f0f0] dark:(text-[#ddd] hover:bg-[#222])" type="button" aria-label="Close">×</button>
           </div>
-          <form class="custom-bang-form">
-            <input class="custom-bang-input" name="t" type="text" placeholder="bang" autocomplete="off" required />
-            <input class="custom-bang-input" name="s" type="text" placeholder="name" autocomplete="off" required />
-            <input class="custom-bang-input" name="d" type="text" placeholder="domain (optional)" autocomplete="off" />
-            <input class="custom-bang-input custom-bang-url-field" name="u" type="text" placeholder="https://example.com/search?q=%s" autocomplete="off" required />
-            <button class="primary-button submit-custom-bang-button" type="submit">Add</button>
-            <button class="secondary-button cancel-edit-custom-bang-button" type="button">Cancel</button>
+          <form class="custom-bang-form grid grid-cols-2 gap-2 mt-4 lt-sm:grid-cols-1">
+            <input class="w-full min-w-0 px-2.5 py-2 border rounded bg-[#f5f5f5] text-[#1a1a1a] dark:(bg-[#191919] text-white)" name="t" type="text" placeholder="bang" autocomplete="off" required />
+            <input class="w-full min-w-0 px-2.5 py-2 border rounded bg-[#f5f5f5] text-[#1a1a1a] dark:(bg-[#191919] text-white)" name="s" type="text" placeholder="name" autocomplete="off" required />
+            <input class="w-full min-w-0 px-2.5 py-2 border rounded bg-[#f5f5f5] text-[#1a1a1a] dark:(bg-[#191919] text-white)" name="d" type="text" placeholder="domain (optional)" autocomplete="off" />
+            <input class="w-full min-w-0 px-2.5 py-2 border rounded bg-[#f5f5f5] text-[#1a1a1a] dark:(bg-[#191919] text-white) col-span-2 lt-sm:col-auto" name="u" type="text" placeholder="https://example.com/search?q=%s" autocomplete="off" required />
+            <button class="btn-base bg-[#1a1a1a] text-white hover:bg-[#333] dark:(bg-[#f1f1f1] text-[#111] hover:bg-[#d8d8d8]) submit-custom-bang-button col-span-2 lt-sm:col-auto" type="submit">Add</button>
+            <button class="btn-base border text-[#333] hover:bg-[#f0f0f0] dark:(text-[#ddd] hover:bg-[#222]) cancel-edit-custom-bang-button col-span-2 lt-sm:col-auto" type="button">Cancel</button>
           </form>
         </div>
       </div>
-      <footer class="footer">
+      <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
         <a href="https://x.com/kvoon_" target="_blank">kvoon3</a>
         •
         <a href="https://github.com/kvoon3/oduck" target="_blank">github</a>
