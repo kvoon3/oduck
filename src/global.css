@@ -129,6 +129,17 @@ textarea {
   background: #28a745;
 }
 
+.raycast-import-button img {
+  width: 20px;
+  height: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .raycast-import-button img {
+    filter: invert(1);
+  }
+}
+
 /* Add footer styles */
 .footer {
   position: fixed;
