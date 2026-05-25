@@ -153,7 +153,7 @@ function noSearchDefaultPageRender() {
             <img src="/clipboard.svg" alt="Copy" />
           </button>
         </div>
-        <p style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank">Raycast Quicklink</a>:</p>
+        <p style="margin-top: 4rem; margin-bottom: 0.5rem;">Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank">Raycast Quicklink</a>:</p>
         <div class="url-container">
           <input
             type="text"
