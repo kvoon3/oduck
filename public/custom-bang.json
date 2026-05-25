@@ -1,0 +1,22 @@
+[
+  {
+    "c": "Custom",
+    "d": "chatgpt.com",
+    "enabled": true,
+    "r": 0,
+    "s": "ChatGPT",
+    "sc": "Custom",
+    "t": "chatgpt",
+    "u": "https://chatgpt.com/?q={{{s}}}"
+  },
+  {
+    "c": "Custom",
+    "d": "chatgpt.com",
+    "enabled": true,
+    "r": 0,
+    "s": "ChatGPT",
+    "sc": "Custom",
+    "t": "c",
+    "u": "https://chatgpt.com?q={{{s}}}"
+  }
+]
