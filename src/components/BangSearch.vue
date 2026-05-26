@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import Fuse from "fuse.js";
 import type { Bang } from "../custom-bang";
+import BaseSelect, { type SelectOption } from "./BaseSelect.vue";
 
 const props = defineProps<{
   allBangs: Bang[];
@@ -22,12 +23,22 @@ const fuse = computed(() => {
 });
 
 const searchEngines = [
-  { name: "Google", key: "google", u: "https://www.google.com/search?q={{{s}}}" },
-  { name: "DuckDuckGo", key: "ddg", u: "https://duckduckgo.com/?q={{{s}}}" },
-  { name: "Bing", key: "bing", u: "https://www.bing.com/search?q={{{s}}}" },
-  { name: "Kagi", key: "kagi", u: "https://kagi.com/search?q={{{s}}}" },
-  { name: "Brave", key: "brave", u: "https://search.brave.com/search?q={{{s}}}" },
+  { name: "Google", key: "google", icon: "i-simple-icons-google", u: "https://www.google.com/search?q={{{s}}}" },
+  { name: "DuckDuckGo", key: "ddg", icon: "i-simple-icons-duckduckgo", u: "https://duckduckgo.com/?q={{{s}}}" },
+  { name: "Bing", key: "bing", icon: "i-simple-icons-microsoftbing", u: "https://www.bing.com/search?q={{{s}}}" },
+  { name: "Kagi", key: "kagi", icon: "i-simple-icons-kagi", u: "https://kagi.com/search?q={{{s}}}" },
+  { name: "Brave", key: "brave", icon: "i-simple-icons-brave", u: "https://search.brave.com/search?q={{{s}}}" },
 ] as const;
+
+const fallbackEngineOptions = computed<SelectOption[]>(() => [
+  ...searchEngines.map((engine) => ({
+    label: engine.name,
+    value: engine.key,
+    icon: engine.icon,
+  })),
+  { label: "Other...", value: "other", icon: "i-ph-dots-three-outline-fill" },
+]);
+
 const fallbackEngine = ref<string>(localStorage.getItem("fallback-engine") ?? "google");
 const customEngineUrl = ref(localStorage.getItem("fallback-engine-url") ?? "");
 const showCustomInput = ref(fallbackEngine.value === "other");
@@ -158,12 +169,8 @@ onMounted(() => {
   <section class="mt-10 text-center">
     <div class="max-w-[560px] mx-auto">
       <form class="flex items-center gap-2" @submit.prevent="doTestRedirect">
-        <select v-model="fallbackEngine" class="input w-auto flex-none" @change="onFallbackEngineChange">
-          <option v-for="engine in searchEngines" :key="engine.key" :value="engine.key">
-            {{ engine.name }}
-          </option>
-          <option value="other">Other…</option>
-        </select>
+        <BaseSelect v-model="fallbackEngine" :options="fallbackEngineOptions" aria-label="Fallback search engine"
+          @change="onFallbackEngineChange" />
         <div class="relative flex-1">
           <input ref="inputRef" v-model="testQuery" type="text" class="input w-full pr-10"
             placeholder="e.g. !gh vuejs/core" spellcheck="false" autocomplete="off" @keydown="onKeydown" />
