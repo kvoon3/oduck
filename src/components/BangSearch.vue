@@ -8,6 +8,7 @@ const props = defineProps<{
   allBangs: Bang[];
   mode?: "replace" | "new-tab";
   autofocus?: boolean;
+  showUrlResult?: boolean;
 }>();
 
 const testQuery = ref("");
@@ -195,7 +196,7 @@ onMounted(() => {
       <input v-if="showCustomInput" v-model="customEngineUrl" type="text" class="input w-full mt-3"
         placeholder="https://example.com/search?q={{{s}}}" spellcheck="false" @input="onCustomEngineUrlChange" />
     </div>
-    <code v-if="testQuery.trim()"
+    <code v-if="props.showUrlResult && testQuery.trim()"
       class="mt-4 block text-sm break-all text-neutral-300 dark:text-neutral-700">{{ decodedUrl }}</code>
   </section>
 </template>
