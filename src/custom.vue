@@ -180,7 +180,6 @@ onMounted(() => {
         <h1>Custom Bangs</h1>
         <p>
           Create your own <code>!bang</code> shortcuts.
-          <a href="/" class="link link-active">← Back to Od*ck</a>
         </p>
       </div>
 
