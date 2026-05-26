@@ -44,7 +44,7 @@ export default defineConfig({
     'link': 'border-0 border-b border-solid border-current pb-0.5 text-[#444] no-underline op-75 transition-opacity duration-150 dark:text-[#a9a9a9]',
     'link-active': 'hover:op-100',
     // Inputs
-    'input': 'box-border w-full min-w-0 border rounded-md bg-[#f5f5f5] px-3 py-2 text-[#1a1a1a] outline-none transition duration-150 placeholder:text-[#777] focus-visible:(ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(bg-[#191919] text-white placeholder:text-[#777] focus-visible:ring-offset-[#101010])',
+    'input': 'box-border w-full min-w-0 border rounded-md bg-[#f5f5f5] px-3 py-2 text-base text-[#1a1a1a] outline-none transition duration-150 placeholder:text-[#777] focus-visible:(ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(bg-[#191919] text-white placeholder:text-[#777] focus-visible:ring-offset-[#101010])',
     // Utilities
     'border': 'border border-solid border-[#ddd] dark:border-[#3d3d3d]',
     'error-text': 'text-[#b00020] dark:text-[#ff8a9a]',

@@ -167,7 +167,7 @@ function handleSubmit() {
         </span>
         <input
           v-model="searchUrl"
-          class="input font-mono text-[13px]"
+          class="input font-mono"
           placeholder="e.g. https://example.com/search?q={{{s}}}"
           spellcheck="false"
           autocomplete="off"
@@ -183,4 +183,3 @@ function handleSubmit() {
     </form>
   </BaseModal>
 </template>
-

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef, watch } from "vue";
+import { nextTick, ref, shallowRef, watch } from "vue";
 import type { CustomBangSource } from "../custom-bang";
 import BaseModal from "./BaseModal.vue";
 
@@ -23,6 +23,7 @@ const emit = defineEmits<{
 const sourceUrl = ref("");
 const editingSourceIndex = shallowRef<number | null>(null);
 const editingSourceUrl = ref("");
+const editingSourceTextarea = shallowRef<HTMLTextAreaElement | null>(null);
 
 watch(
   () => props.visible,
@@ -38,14 +39,23 @@ function handleSubmit() {
   if (trimmed) emit("url", trimmed);
 }
 
-function editSource(index: number, url: string) {
+async function editSource(index: number, url: string) {
   editingSourceIndex.value = index;
   editingSourceUrl.value = url;
+  await nextTick();
+  editingSourceTextarea.value?.focus();
+}
+
+function setEditingSourceTextarea(element: Element | null) {
+  editingSourceTextarea.value = element instanceof HTMLTextAreaElement
+    ? element
+    : null;
 }
 
 function cancelEditSource() {
   editingSourceIndex.value = null;
   editingSourceUrl.value = "";
+  editingSourceTextarea.value = null;
 }
 
 function saveSource(index: number) {
@@ -80,7 +90,7 @@ function saveSource(index: number) {
         </span>
         <input
           v-model="sourceUrl"
-          class="input font-mono text-[13px]"
+          class="input font-mono"
           placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
           spellcheck="false"
           autocomplete="off"
@@ -101,10 +111,12 @@ function saveSource(index: number) {
           :key="source.url"
           class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md bg-neutral-200/45 px-2.5 py-2 dark:bg-neutral-800/70 lt-sm:grid-cols-1"
         >
-          <input
+          <textarea
             v-if="editingSourceIndex === index"
+            :ref="setEditingSourceTextarea"
             v-model="editingSourceUrl"
-            class="input font-mono text-[12px] py-1.5"
+            class="input min-h-[4.75em] resize-none font-mono leading-5 py-1.5"
+            rows="2"
             spellcheck="false"
             autocomplete="off"
             :disabled="loading || syncingSourceIndex !== null"
