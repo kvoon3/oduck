@@ -15,6 +15,7 @@ export default defineConfig({
       preflight: true,
     }),
     presetIcons({
+      scale: 1.2,
       extraProperties: {
         display: 'inline-block',
         'vertical-align': 'middle',

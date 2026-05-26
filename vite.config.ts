@@ -21,6 +21,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, "index.html"),
         custom: resolve(import.meta.dirname, "custom.html"),
+        search: resolve(import.meta.dirname, "search.html"),
       },
     },
   },

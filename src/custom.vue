@@ -185,27 +185,16 @@ onMounted(() => {
 
       <BangSearch :all-bangs="allBangs" />
 
-      <BangList
-        :custom-bangs="customBangs"
-        @add="openModal()"
-        @import="handleImport"
-        @export="handleExport"
-        @toggle="toggleBang"
-        @edit="handleEdit"
-        @remove="handleRemove"
-      />
+      <BangList :custom-bangs="customBangs" @add="openModal()" @import="handleImport" @export="handleExport"
+        @toggle="toggleBang" @edit="handleEdit" @remove="handleRemove" />
 
       <input ref="fileInput" class="hidden" type="file" accept="application/json,.json" @change="onFileChange" />
     </div>
 
     <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 
-    <RemoveConfirmModal
-      :visible="removeConfirmVisible"
-      :removing-bang="removingBang"
-      @close="closeRemoveConfirm"
-      @confirm="confirmRemove"
-    />
+    <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
+      @confirm="confirmRemove" />
 
     <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
       <a href="https://x.com/kvoon_" target="_blank" class="link link-active">kvoon3</a>

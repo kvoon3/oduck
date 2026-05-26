@@ -101,7 +101,11 @@ function noSearchDefaultPageRender() {
             <span class="i-ph-download-simple-duotone text-xl" aria-hidden="true"></span>
           </button>
         </div>
-        <p class="mt-16">
+        <p class="mt-10">
+          <a href="/search.html" class="link link-active">Oduck Search</a>
+          &mdash; use as your browser's search engine homepage
+        </p>
+        <p class="mt-4">
           <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
         </p>
       </div>
