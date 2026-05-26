@@ -169,11 +169,13 @@ onMounted(() => {
 <template>
   <section class="mt-10 text-center">
     <div class="max-w-[560px] mx-auto">
-      <form class="flex items-center gap-2" @submit.prevent="doTestRedirect">
-        <BaseSelect v-model="fallbackEngine" :options="fallbackEngineOptions" aria-label="Fallback search engine"
-          @change="onFallbackEngineChange" />
+      <form @submit.prevent="doTestRedirect">
         <div class="relative flex-1">
-          <input ref="inputRef" v-model="testQuery" type="text" class="input w-full pr-10"
+          <div class="absolute left-1 top-1/2 z-1 -translate-y-1/2">
+            <BaseSelect v-model="fallbackEngine" :options="fallbackEngineOptions" aria-label="Fallback search engine"
+              @change="onFallbackEngineChange" />
+          </div>
+          <input ref="inputRef" v-model="testQuery" type="text" class="input w-full pl-12 pr-10"
             placeholder="e.g. !gh vuejs/core" spellcheck="false" autocomplete="off" @keydown="onKeydown" />
           <button class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost" type="submit"
             :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url">
