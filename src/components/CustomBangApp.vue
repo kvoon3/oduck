@@ -17,11 +17,13 @@ const editingIndex = ref<number | null>(null);
 const modalVisible = ref(false);
 
 const fileInput = ref<HTMLInputElement | null>(null);
-const tryBang = ref<CustomBang | null>(null);
-const tryQuery = ref("");
-const tryModalVisible = ref(false);
 
 const testQuery = ref("");
+const removeConfirmIndex = ref<number | null>(null);
+const removeConfirmVisible = ref(false);
+const removingBang = computed<CustomBang | null>(() => {
+  return removeConfirmIndex.value !== null ? (customBangs.value[removeConfirmIndex.value] ?? null) : null;
+});
 const allBangs = computed<Bang[]>(() => [...getActiveCustomBangs(), ...bangs]);
 
 const searchEngines = [
@@ -145,6 +147,15 @@ function handleEdit(index: number) {
 function handleRemove(index: number) {
   const bang = customBangs.value[index];
   if (!bang) return;
+  removeConfirmIndex.value = index;
+  removeConfirmVisible.value = true;
+}
+
+function confirmRemove() {
+  const index = removeConfirmIndex.value;
+  if (index === null) return;
+  const bang = customBangs.value[index];
+  if (!bang) return;
   customBangs.value.splice(index, 1);
   if (editingIndex.value === index) {
     closeModal();
@@ -152,6 +163,12 @@ function handleRemove(index: number) {
     editingIndex.value -= 1;
   }
   saveToStorage();
+  closeRemoveConfirm();
+}
+
+function closeRemoveConfirm() {
+  removeConfirmVisible.value = false;
+  removeConfirmIndex.value = null;
 }
 
 function handleModalSubmit(bang: CustomBang) {
@@ -206,37 +223,12 @@ async function onFileChange(event: Event) {
 
 function handleEsc(event: KeyboardEvent) {
   if (event.key === "Escape") {
-    if (tryModalVisible.value) {
-      closeTryModal();
+    if (removeConfirmVisible.value) {
+      closeRemoveConfirm();
     } else if (modalVisible.value) {
       closeModal();
     }
   }
-}
-
-function handleTry(index: number) {
-  const bang = customBangs.value[index];
-  if (!bang) return;
-  tryBang.value = bang;
-  tryQuery.value = "";
-  tryModalVisible.value = true;
-}
-
-function closeTryModal() {
-  tryModalVisible.value = false;
-  tryBang.value = null;
-}
-
-function doTryRedirect() {
-  if (!tryBang.value) return;
-  const query = tryQuery.value.trim();
-  if (!query) return;
-  const searchUrl = tryBang.value.u.replace(
-    "{{{s}}}",
-    encodeURIComponent(query).replace(/%2F/g, "/"),
-  );
-  window.open(searchUrl, "_blank");
-  closeTryModal();
 }
 
 onMounted(() => {
@@ -341,9 +333,6 @@ onMounted(() => {
                   ">!{{ bang.t }}</span>
               </div>
               <div class="flex gap-1.5 lt-sm:w-full">
-                <button class="btn-secondary btn-sm flex-1" type="button" @click.stop="handleTry(index)">
-                  Try
-                </button>
                 <button class="btn-secondary btn-sm flex-1" type="button" @click.stop="handleEdit(index)">
                   Edit
                 </button>
@@ -361,31 +350,48 @@ onMounted(() => {
 
     <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 
-    <BaseModal :visible="tryModalVisible" @close="closeTryModal">
+    <BaseModal :visible="removeConfirmVisible" @close="closeRemoveConfirm">
       <div class="flex items-center justify-between gap-4">
-        <h3 class="text-[18px]">Try !{{ tryBang?.t }}</h3>
-        <button class="btn-close" type="button" aria-label="Close" @click="closeTryModal">
+        <h3 class="text-[18px]">Remove Bang</h3>
+        <button class="btn-close" type="button" aria-label="Close" @click="closeRemoveConfirm">
           ×
         </button>
       </div>
-
-      <form class="grid gap-4 mt-6" @submit.prevent="doTryRedirect">
-        <label class="grid gap-1.5 w-full">
-          <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-            Search query
-          </span>
-          <div class="flex items-center gap-2">
-            <input v-model="tryQuery" class="input flex-1" placeholder="e.g. how to center a div" spellcheck="false"
-              autocomplete="off" required />
-            <button class="btn-icon" type="button" :title="tryQuery.trim() ? 'Open in new tab' : 'Enter a query first'"
-              :disabled="!tryQuery.trim()"
-              :class="tryQuery.trim() ? 'text-[#1a1a1a] dark:text-[#f1f1f1]' : 'text-[#aaa] dark:text-[#555]'"
-              @click="doTryRedirect">
-              <span class="i-ph-arrow-square-out-duotone text-xl" aria-hidden="true"></span>
-            </button>
+      <p class="mt-4 text-sm text-[#666] dark:text-[#aaa]">
+        Are you sure you want to remove this bang?
+      </p>
+      <div class="mt-4 p-4 border rounded-md bg-[#fafafa] dark:bg-[#171717] text-sm">
+        <div class="grid gap-2">
+          <div class="flex gap-2">
+            <span class="flex-none w-16 text-[#888] dark:text-[#666]">Name</span>
+            <strong>{{ removingBang?.s }}</strong>
           </div>
-        </label>
-      </form>
+          <div class="flex gap-2">
+            <span class="flex-none w-16 text-[#888] dark:text-[#666]">Trigger</span>
+            <code>!{{ removingBang?.t }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="flex-none w-16 text-[#888] dark:text-[#666]">URL</span>
+            <code class="break-all">{{ removingBang?.u }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="flex-none w-16 text-[#888] dark:text-[#666]">Domain</span>
+            <code>{{ removingBang?.d }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="flex-none w-16 text-[#888] dark:text-[#666]">Category</span>
+            <span>{{ removingBang?.c }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-6 justify-end">
+        <button class="btn-secondary" type="button" @click="closeRemoveConfirm">
+          Cancel
+        </button>
+        <button class="btn-danger" type="button" @click="confirmRemove">
+          Remove
+        </button>
+      </div>
     </BaseModal>
 
     <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
