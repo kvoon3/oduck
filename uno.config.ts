@@ -21,9 +21,8 @@ export default defineConfig({
       },
     }),
     presetWebFonts({
-      provider: 'google',
       fonts: {
-        sans: 'Inter:400,500,600,700',
+        sans: 'DM Sans',
       },
     }),
   ],
