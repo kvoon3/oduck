@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import type { Bang } from "../custom-bang";
 
 const props = defineProps<{
   allBangs: Bang[];
+  mode?: "replace" | "new-tab";
+  autofocus?: boolean;
 }>();
 
 const testQuery = ref("");
+const inputRef = ref<HTMLInputElement | null>(null);
 
 const searchEngines = [
   { name: "Google", key: "google", u: "https://www.google.com/search?q={{{s}}}" },
@@ -82,7 +85,11 @@ const decodedUrl = computed(() => {
 
 function doTestRedirect() {
   if (!testMatch.value.url) return;
-  window.open(testMatch.value.url, "_blank");
+  if (props.mode === "replace") {
+    window.location.href = testMatch.value.url;
+  } else {
+    window.open(testMatch.value.url, "_blank");
+  }
 }
 </script>
 
@@ -99,9 +106,8 @@ function doTestRedirect() {
         <div class="relative flex-1">
           <input v-model="testQuery" type="text" class="input w-full pr-10" placeholder="e.g. !gh vuejs/core"
             spellcheck="false" autocomplete="off" />
-          <button class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-base p-1" type="submit"
-            :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url"
-            :class="testMatch.url ? 'text-[#1a1a1a] dark:text-[#f1f1f1]' : 'text-[#aaa] dark:text-[#555]'">
+          <button class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost" type="submit"
+            :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url">
             <span class="i-ph-magnifying-glass-duotone text-xl " aria-hidden="true"></span>
           </button>
         </div>

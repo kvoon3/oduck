@@ -184,7 +184,7 @@ onMounted(() => {
         </p>
       </div>
 
-      <BangSearch :all-bangs="allBangs" />
+      <BangSearch :all-bangs="allBangs" mode="new-tab" />
 
       <BangList :custom-bangs="customBangs" @add="openModal()" @import="handleImport" @export="handleExport"
         @toggle="toggleBang" @edit="handleEdit" @remove="handleRemove" />
