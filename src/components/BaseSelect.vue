@@ -124,29 +124,46 @@ onUnmounted(() => {
       <span v-if="selectedOption?.icon" class="text-[18px]" :class="selectedOption.icon" aria-hidden="true"></span>
     </button>
 
-    <ul
-      v-if="open"
-      class="absolute left-0 top-full z-20 mt-2 w-[220px] list-none border rounded-md bg-[#f5f5f5] p-1 shadow-lg shadow-black/10 dark:bg-[#191919] dark:shadow-black/30"
-      role="listbox"
-      :aria-label="ariaLabel"
-      @keydown="onListKeydown"
-    >
-      <li
-        v-for="(option, index) in options"
-        :key="option.value"
-        :ref="(element) => setOptionRef(element, index)"
-        class="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-sm outline-none transition duration-150"
-        :class="option.value === modelValue ? 'bg-neutral-200 text-neutral-950 dark:bg-neutral-700 dark:text-neutral-50' : 'text-neutral-700 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-800'"
-        role="option"
-        :aria-selected="option.value === modelValue"
-        tabindex="-1"
-        @click="selectOption(option)"
-        @mouseenter="activeIndex = index"
+    <Transition name="select-menu">
+      <ul
+        v-if="open"
+        class="absolute left-0 top-full z-20 mt-2 w-[220px] origin-top-left list-none border rounded-md bg-[#f5f5f5] p-1 shadow-lg shadow-black/10 dark:bg-[#191919] dark:shadow-black/30"
+        role="listbox"
+        :aria-label="ariaLabel"
+        @keydown="onListKeydown"
       >
-        <span v-if="option.icon" class="text-[16px] shrink-0" :class="option.icon" aria-hidden="true"></span>
-        <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
-        <span v-if="option.value === modelValue" class="i-ph-check-bold text-[14px] shrink-0" aria-hidden="true"></span>
-      </li>
-    </ul>
+        <li
+          v-for="(option, index) in options"
+          :key="option.value"
+          :ref="(element) => setOptionRef(element, index)"
+          class="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-sm outline-none transition duration-150"
+          :class="option.value === modelValue ? 'bg-neutral-200 text-neutral-950 dark:bg-neutral-700 dark:text-neutral-50' : 'text-neutral-700 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-800'"
+          role="option"
+          :aria-selected="option.value === modelValue"
+          tabindex="-1"
+          @click="selectOption(option)"
+          @mouseenter="activeIndex = index"
+        >
+          <span v-if="option.icon" class="text-[16px] shrink-0" :class="option.icon" aria-hidden="true"></span>
+          <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
+          <span v-if="option.value === modelValue" class="i-ph-check-bold text-[14px] shrink-0" aria-hidden="true"></span>
+        </li>
+      </ul>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.select-menu-enter-active,
+.select-menu-leave-active {
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.select-menu-enter-from,
+.select-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+</style>

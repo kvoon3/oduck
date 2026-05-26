@@ -5,7 +5,13 @@ export type CustomBang = Bang & {
   enabled?: boolean;
 };
 
-const CUSTOM_BANG_URL = "/custom-bang.json";
+export const DEFAULT_CUSTOM_BANG_SOURCE_URL =
+  "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json";
+
+export interface CustomBangSource {
+  url: string;
+  tags: string[];
+}
 
 export function isBang(value: unknown): value is CustomBang {
   if (!value || typeof value !== "object") return false;
@@ -41,14 +47,28 @@ export function parseCustomBangs(value: unknown): CustomBang[] {
   }));
 }
 
-export async function loadCustomBangs(): Promise<CustomBang[]> {
-  try {
-    const response = await fetch(CUSTOM_BANG_URL, { cache: "no-store" });
-    if (!response.ok) return [];
+export function normalizeCustomBangSourceUrl(sourceUrl: string): string {
+  const url = new URL(sourceUrl);
 
-    return parseCustomBangs(await response.json());
-  } catch (error) {
-    console.warn("Failed to load custom bang config.", error);
-    return [];
+  if (url.hostname === "github.com") {
+    const [owner, repo, route, ref, ...path] = url.pathname.split("/").filter(Boolean);
+
+    if (owner && repo && (route === "blob" || route === "raw") && ref && path.length > 0) {
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${path.join("/")}`;
+    }
   }
+
+  return url.toString();
+}
+
+export async function loadCustomBangsFromUrl(sourceUrl: string): Promise<CustomBang[]> {
+  const response = await fetch(normalizeCustomBangSourceUrl(sourceUrl), {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load JSON source (${response.status}).`);
+  }
+
+  return parseCustomBangs(await response.json());
 }

@@ -4,7 +4,6 @@ import { bangs } from "./bang";
 import {
   type Bang,
   type CustomBang,
-  loadCustomBangs,
   parseCustomBangs,
 } from "./custom-bang";
 
@@ -194,8 +193,8 @@ function getBangredirectUrl() {
     : null;
 }
 
-async function doRedirect() {
-  customBangs = getSavedCustomBangs() ?? (await loadCustomBangs());
+function doRedirect() {
+  customBangs = getSavedCustomBangs() ?? [];
   syncAllBangs();
 
   const searchUrl = getBangredirectUrl();
