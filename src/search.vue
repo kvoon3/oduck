@@ -38,7 +38,7 @@ onMounted(() => {
     <div class="max-w-[46rem] w-full">
       <h1 class="text-center">Od*ck</h1>
 
-      <BangSearch :all-bangs="allBangs" mode="replace" class="mt-10" />
+      <BangSearch :all-bangs="allBangs" mode="replace" autofocus class="mt-10" />
     </div>
 
     <oduck-footer />

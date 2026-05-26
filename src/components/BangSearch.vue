@@ -91,6 +91,12 @@ function doTestRedirect() {
     window.open(testMatch.value.url, "_blank");
   }
 }
+
+onMounted(() => {
+  if (props.autofocus) {
+    inputRef.value?.focus();
+  }
+});
 </script>
 
 <template>
@@ -104,7 +110,7 @@ function doTestRedirect() {
           <option value="other">Other…</option>
         </select>
         <div class="relative flex-1">
-          <input v-model="testQuery" type="text" class="input w-full pr-10" placeholder="e.g. !gh vuejs/core"
+          <input ref="inputRef" v-model="testQuery" type="text" class="input w-full pr-10" placeholder="e.g. !gh vuejs/core"
             spellcheck="false" autocomplete="off" />
           <button class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost" type="submit"
             :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url">
