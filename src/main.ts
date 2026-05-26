@@ -75,42 +75,48 @@ function noSearchDefaultPageRender() {
   app.innerHTML = `
     <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
       <oduck-header></oduck-header>
-      <div class="max-w-[46rem] w-full text-center">
-        <h1>Od*ck</h1>
-        <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank" class="link link-active">all of DuckDuckGo's bangs.</a></p>
-        <div class="flex items-center gap-2 mt-4">
-          <input
-            type="text"
-            class="input"
-            value="${getSearchEngineUrl()}"
-            readonly
-          />
-          <button class="btn-icon" aria-label="Copy">
-            <span class="copy-icon i-ph-clipboard-duotone text-xl" aria-hidden="true"></span>
-          </button>
-        </div>
-        <p class="mt-16 mb-2">Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank" class="link link-active">Raycast Quicklink</a>:</p>
-        <div class="flex items-center gap-2 mt-4">
-          <input
-            type="text"
-            class="input"
-            value="${getRaycastQuicklinkUrl()}"
-            readonly
-          />
-          <button class="btn-icon" aria-label="Copy Raycast URL">
-            <span class="raycast-copy-icon i-ph-clipboard-duotone text-xl" aria-hidden="true"></span>
-          </button>
-          <button class="btn-icon" title="Import to Raycast" aria-label="Import to Raycast">
-            <span class="i-ph-download-simple-duotone text-xl" aria-hidden="true"></span>
-          </button>
-        </div>
-        <p class="mt-10">
-          <a href="/search.html" class="link link-active">Oduck Search</a>
-          &mdash; use as your browser's search engine homepage
-        </p>
-        <p class="mt-4">
-          <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
-        </p>
+      <div class="max-w-[46rem] w-full text-center flex flex-col gap-8">
+        <section>
+          <h1>Od*ck</h1>
+          <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank" class="link link-active">all of DuckDuckGo's bangs.</a></p>
+          <div class="flex items-center gap-2 mt-4">
+            <input
+              type="text"
+              class="input"
+              value="${getSearchEngineUrl()}"
+              readonly
+            />
+            <button class="btn-icon" aria-label="Copy">
+              <span class="copy-icon i-ph-clipboard-duotone text-xl" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
+        <section>
+          <p>Or add as a <a href="https://www.raycast.com/extensions/quicklinks" target="_blank" class="link link-active">Raycast Quicklink</a>:</p>
+          <div class="flex items-center gap-2 mt-4">
+            <input
+              type="text"
+              class="input"
+              value="${getRaycastQuicklinkUrl()}"
+              readonly
+            />
+            <button class="btn-icon" aria-label="Copy Raycast URL">
+              <span class="raycast-copy-icon i-ph-clipboard-duotone text-xl" aria-hidden="true"></span>
+            </button>
+            <button class="btn-icon" title="Import to Raycast" aria-label="Import to Raycast">
+              <span class="i-ph-download-simple-duotone text-xl" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
+        <section>
+          <p>
+            <a href="/search.html" class="link link-active">Oduck Search</a>
+            &mdash; use as your browser's search engine homepage
+          </p>
+          <p class="mt-4">
+            <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
+          </p>
+        </section>
       </div>
       <oduck-footer></oduck-footer>
     </div>
