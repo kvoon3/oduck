@@ -18,7 +18,7 @@ function getSearchEngineUrl() {
 }
 
 function getRaycastQuicklinkUrl() {
-  return `${window.location.origin}?q={argument}`;
+  return `${window.location.origin}?q=!{argument}`;
 }
 
 function getSavedCustomBangs(): CustomBang[] | null {

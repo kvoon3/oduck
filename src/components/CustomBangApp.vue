@@ -269,7 +269,7 @@ onMounted(() => {
                   type="button"
                   @click.stop="handleTest(index)"
                 >
-                  Test
+                  Try
                 </button>
                 <button
                   class="btn-secondary btn-sm flex-1"
