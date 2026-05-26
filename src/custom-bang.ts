@@ -13,38 +13,13 @@ export interface CustomBangSource {
   tags: string[];
 }
 
-export function isBang(value: unknown): value is CustomBang {
-  if (!value || typeof value !== "object") return false;
-
-  const bang = value as Record<string, unknown>;
-  return (
-    typeof bang.c === "string" &&
-    typeof bang.d === "string" &&
-    typeof bang.r === "number" &&
-    typeof bang.s === "string" &&
-    typeof bang.sc === "string" &&
-    typeof bang.t === "string" &&
-    typeof bang.u === "string" &&
-    (bang.u.includes("{{{s}}}") || bang.u.includes("%s")) &&
-    (bang.enabled === undefined || typeof bang.enabled === "boolean")
+export function parseCustomBangs(value: CustomBang[]): CustomBang[] {
+  return value.map((bang) =>
+    Object.assign({}, bang, {
+      t: bang.t.toLowerCase(),
+      u: bang.u.replace("%s", "{{{s}}}"),
+    }),
   );
-}
-
-export function parseCustomBangs(value: unknown): CustomBang[] {
-  if (!Array.isArray(value)) {
-    throw new Error("Custom bang config must be a JSON array.");
-  }
-
-  const invalidIndex = value.findIndex((item) => !isBang(item));
-  if (invalidIndex !== -1) {
-    throw new Error(`Custom bang at index ${invalidIndex} is invalid.`);
-  }
-
-  return value.map((bang) => ({
-    ...bang,
-    t: bang.t.toLowerCase(),
-    u: bang.u.replace("%s", "{{{s}}}"),
-  }));
 }
 
 export function normalizeCustomBangSourceUrl(sourceUrl: string): string {
@@ -70,5 +45,6 @@ export async function loadCustomBangsFromUrl(sourceUrl: string): Promise<CustomB
     throw new Error(`Failed to load JSON source (${response.status}).`);
   }
 
-  return parseCustomBangs(await response.json());
+  const bangs: CustomBang[] = await response.json();
+  return parseCustomBangs(bangs);
 }
