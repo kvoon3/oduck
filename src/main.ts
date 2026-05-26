@@ -8,7 +8,17 @@ import {
 import "virtual:uno.css";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
-const LS_DEFAULT_BANG = localStorage.getItem("default-bang") ?? "g";
+
+const searchEngines: Record<string, string> = {
+  google: "https://www.google.com/search?q={{{s}}}",
+  ddg: "https://duckduckgo.com/?q={{{s}}}",
+  bing: "https://www.bing.com/search?q={{{s}}}",
+};
+const fallbackEngine = localStorage.getItem("fallback-engine") ?? "google";
+const fallbackEngineUrl =
+  fallbackEngine === "other"
+    ? localStorage.getItem("fallback-engine-url") ?? ""
+    : searchEngines[fallbackEngine] ?? searchEngines.google;
 
 let customBangs: CustomBang[] = [];
 let allBangs: Bang[] = bangs;
@@ -90,19 +100,6 @@ function noSearchDefaultPageRender() {
             <span class="i-ph-download-simple-duotone text-xl" aria-hidden="true"></span>
           </button>
         </div>
-        <p class="mt-16 mb-2">Try a bang:</p>
-        <form class="flex items-center gap-2 mt-4" id="test-form">
-          <input
-            type="text"
-            class="input test-input"
-            placeholder="e.g. !gh vuejs/core"
-            spellcheck="false"
-            autocomplete="off"
-          />
-          <button class="btn-icon" type="submit" aria-label="Open search">
-            <span class="test-icon i-ph-arrow-square-out-duotone text-xl" aria-hidden="true"></span>
-          </button>
-        </form>
         <p class="mt-16">
           <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
         </p>
@@ -158,15 +155,6 @@ function noSearchDefaultPageRender() {
     downloadJson("oduck.raycast-quicklink.json", quicklink);
   });
 
-  const testForm = app.querySelector<HTMLFormElement>("#test-form")!;
-  const testInput = testForm.querySelector<HTMLInputElement>(".test-input")!;
-
-  testForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const query = testInput.value.trim();
-    if (!query) return;
-    window.location.href = `${window.location.origin}?q=${encodeURIComponent(query)}`;
-  });
 }
 
 function getBangredirectUrl() {
@@ -178,24 +166,22 @@ function getBangredirectUrl() {
   }
 
   const match = query.match(/!(\S+)/i);
-
   const bangCandidate = match?.[1]?.toLowerCase();
-  const defaultBang = allBangs.find((b) => b.t === LS_DEFAULT_BANG);
-  const selectedBang =
-    allBangs.find((b) => b.t === bangCandidate) ?? defaultBang;
-
+  const selectedBang = allBangs.find((b) => b.t === bangCandidate) ?? null;
   const cleanQuery = query.replace(/!\S+\s*/i, "").trim();
 
-  if (cleanQuery === "")
-    return selectedBang ? `https://${selectedBang.d}` : null;
+  if (selectedBang) {
+    if (cleanQuery === "")
+      return `https://${selectedBang.d}`;
+    return selectedBang.u.replace(
+      "{{{s}}}",
+      encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
+    );
+  }
 
-  const searchUrl = selectedBang?.u.replace(
-    "{{{s}}}",
-    encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
-  );
-  if (!searchUrl) return null;
-
-  return searchUrl;
+  return cleanQuery && fallbackEngineUrl
+    ? fallbackEngineUrl.replace("{{{s}}}", encodeURIComponent(cleanQuery).replace(/%2F/g, "/"))
+    : null;
 }
 
 async function doRedirect() {
