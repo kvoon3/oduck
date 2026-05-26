@@ -16,10 +16,11 @@ export default defineConfig({
     cloudflare(),
   ],
   build: {
-    rollupOptions: {
+    chunkSizeWarningLimit: 2500,
+    rolldownOptions: {
       input: {
-        main: resolve(__dirname, "index.html"),
-        custom: resolve(__dirname, "custom.html"),
+        main: resolve(import.meta.dirname, "index.html"),
+        custom: resolve(import.meta.dirname, "custom.html"),
       },
     },
   },

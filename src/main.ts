@@ -5,7 +5,8 @@ import {
   loadCustomBangs,
   parseCustomBangs,
 } from "./custom-bang";
-import "virtual:uno.css";
+
+import 'virtual:uno.css'
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 

@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "pnpm run build && wrangler dev",
     "deploy": "pnpm run build && wrangler deploy",
-    "up": "pnpx taze -I major"
+    "up": "pnpx taze -I major",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.38.0",
