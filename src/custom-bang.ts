@@ -8,8 +8,9 @@ export type CustomBang = Bang & {
   origin?: BangOrigin;
 };
 
-export const DEFAULT_CUSTOM_BANG_SOURCE_URL =
-  "https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json";
+export const DEFAULT_CUSTOM_BANG_SOURCE_URL = import.meta.env.DEV
+  ? "/custom-bang.json"
+  : "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json";
 
 export interface CustomBangSource {
   name: string;
@@ -48,7 +49,7 @@ export function parseCustomBangs(value: CustomBang[]): CustomBang[] {
 }
 
 export function normalizeCustomBangSourceUrl(sourceUrl: string): string {
-  const url = new URL(sourceUrl);
+  const url = new URL(sourceUrl, window.location.origin);
 
   if (url.hostname === "github.com") {
     const [owner, repo, route, ref, ...path] = url.pathname.split("/").filter(Boolean);
