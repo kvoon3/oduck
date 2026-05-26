@@ -15,6 +15,7 @@ class OduckHeader extends HTMLElement {
       nav {
         display: flex;
         gap: 0.75rem;
+        align-items: center;
         font-size: 0.875rem;
         line-height: 1.25rem;
         color: #888;
@@ -26,6 +27,9 @@ class OduckHeader extends HTMLElement {
       }
       a {
         border: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3125rem;
         color: #888;
         text-decoration: none;
         opacity: 0.75;

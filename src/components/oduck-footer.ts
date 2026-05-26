@@ -15,14 +15,18 @@ class OduckFooter extends HTMLElement {
         z-index: 50;
       }
       div {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
         font-size: 0.875rem;
         line-height: 1.25rem;
         color: #888;
       }
       a {
         border: 0;
-        border-bottom: 1px solid currentColor;
-        padding-bottom: 0.125rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3125rem;
         color: #888;
         text-decoration: none;
         opacity: 0.75;
@@ -35,9 +39,9 @@ class OduckFooter extends HTMLElement {
 
     const container = document.createElement("div");
     container.innerHTML = `
-      <a href="https://x.com/kvoon_" target="_blank">kvoon3</a>
+      <a href="https://x.com/kvoon_" target="_blank" rel="noreferrer">kvoon3</a>
       <span>&bull;</span>
-      <a href="https://github.com/kvoon3/oduck" target="_blank">github</a>
+      <a href="https://github.com/kvoon3/oduck" target="_blank" rel="noreferrer">github</a>
     `;
 
     shadow.append(style, container);
