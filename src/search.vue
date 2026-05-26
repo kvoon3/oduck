@@ -34,18 +34,13 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+    <oduck-header />
     <div class="max-w-[46rem] w-full">
       <h1 class="text-center">Od*ck</h1>
 
       <BangSearch :all-bangs="allBangs" class="mt-10" />
     </div>
 
-    <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
-      <a href="/" class="link link-active">← Oduck</a>
-      •
-      <a href="https://x.com/kvoon_" target="_blank" class="link link-active">kvoon3</a>
-      •
-      <a href="https://github.com/kvoon3/oduck" target="_blank" class="link link-active">github</a>
-    </footer>
+    <oduck-footer />
   </div>
 </template>

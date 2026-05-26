@@ -1,3 +1,5 @@
+import "./components/oduck-header";
+import "./components/oduck-footer";
 import { bangs } from "./bang";
 import {
   type Bang,
@@ -72,6 +74,7 @@ function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
     <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+      <oduck-header></oduck-header>
       <div class="max-w-[46rem] w-full text-center">
         <h1>Od*ck</h1>
         <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank" class="link link-active">all of DuckDuckGo's bangs.</a></p>
@@ -109,11 +112,7 @@ function noSearchDefaultPageRender() {
           <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
         </p>
       </div>
-      <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
-        <a href="https://x.com/kvoon_" target="_blank" class="link link-active">kvoon3</a>
-        •
-        <a href="https://github.com/kvoon3/oduck" target="_blank" class="link link-active">github</a>
-      </footer>
+      <oduck-footer></oduck-footer>
     </div>
   `;
 

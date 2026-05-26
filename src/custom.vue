@@ -174,6 +174,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+    <oduck-header />
     <div class="max-w-[46rem] w-full">
       <div class="text-center">
         <h1>Custom Bangs</h1>
@@ -196,10 +197,6 @@ onMounted(() => {
     <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
       @confirm="confirmRemove" />
 
-    <footer class="fixed bottom-4 left-0 right-0 text-center text-sm text-[#666] dark:text-[#999]">
-      <a href="https://x.com/kvoon_" target="_blank" class="link link-active">kvoon3</a>
-      •
-      <a href="https://github.com/kvoon3/oduck" target="_blank" class="link link-active">github</a>
-    </footer>
+    <oduck-footer />
   </div>
 </template>

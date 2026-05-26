@@ -12,6 +12,9 @@
 - Use a shared modal component with proper transitions instead of ad-hoc per-component modals. Confidence: 0.55
 - Keep reusable components minimal and free of page-specific headings/intro text; place those on the consuming page instead. Confidence: 0.65
 
+# architecture
+- Use web components for shared UI elements that need to work across both Vue and vanilla JS pages, avoiding duplicated HTML/code. Confidence: 0.60
+
 # vue-cdn
 - Vue CDN component options objects are plain JavaScript at runtime — avoid TypeScript-only syntax like `as` type assertions, type annotations, or TS-specific constructs in props/emits/setup options. Confidence: 0.75
 - Prefer Vite-bundled Vue over Vue CDN `<script>` tags. Confidence: 0.60
