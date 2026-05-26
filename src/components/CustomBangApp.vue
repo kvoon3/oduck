@@ -247,77 +247,63 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
-    <div class="max-w-[46rem] w-full text-center">
-      <h1>Custom Bangs</h1>
-      <p>
-        Create your own <code>!bang</code> shortcuts.
-        <a href="/" class="link link-active">← Back to Od*ck</a>
-      </p>
-      <section class="mt-13">
-        <h2 class="text-[22px]">Try a bang</h2>
-        <form class="flex items-center gap-2 mt-4 justify-center" @submit.prevent="doTestRedirect">
-          <input
-            v-model="testQuery"
-            type="text"
-            class="input flex-1 max-w-[400px]"
-            placeholder="e.g. !gh vuejs/core"
-            spellcheck="false"
-            autocomplete="off"
-          />
-          <button
-            class="btn-icon"
-            type="submit"
-            :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'"
-            :disabled="!testMatch.url"
-            :class="testMatch.url ? 'text-[#1a1a1a] dark:text-[#f1f1f1]' : 'text-[#aaa] dark:text-[#555]'"
-          >
-            <span class="i-ph-arrow-square-out-duotone text-xl" aria-hidden="true"></span>
-          </button>
-        </form>
-        <div class="mt-4 p-3.5 border rounded-md bg-[#fafafa] dark:bg-[#171717] min-h-[48px] flex items-center justify-center">
-          <template v-if="!testQuery.trim()">
-            <span class="text-[#aaa] dark:text-[#555] text-sm">Enter a bang query to see where it redirects</span>
-          </template>
-          <template v-else-if="!testMatch.bang">
-            <code class="text-sm break-all text-[#1a7a1a] dark:text-[#4ade80]">{{ testMatch.url }}</code>
-          </template>
-          <template v-else>
-            <code class="text-sm break-all text-[#1a7a1a] dark:text-[#4ade80]">{{ testMatch.url }}</code>
-          </template>
-        </div>
-      </section>
-      <section class="mt-13">
-        <h2 class="text-[22px]">Default Search Engine</h2>
-        <p class="mt-2 text-sm text-[#666] dark:text-[#aaa]">
-          Fallback when no bang or an unknown bang is typed.
+    <div class="max-w-[46rem] w-full">
+      <div class="text-center">
+        <h1>Custom Bangs</h1>
+        <p>
+          Create your own <code>!bang</code> shortcuts.
+          <a href="/" class="link link-active">← Back to Od*ck</a>
         </p>
-        <div class="mt-4 flex flex-col items-center gap-3">
-          <select
-            v-model="fallbackEngine"
-            class="input max-w-[400px] w-full"
-            @change="onFallbackEngineChange"
-          >
-            <option
-              v-for="engine in searchEngines"
-              :key="engine.key"
-              :value="engine.key"
+      </div>
+      <section class="mt-10 text-center">
+        <h2 class="text-[22px]">Try a bang</h2>
+        <div class="max-w-[400px] mx-auto mt-4">
+          <form class="flex items-center gap-2" @submit.prevent="doTestRedirect">
+            <select
+              v-model="fallbackEngine"
+              class="input w-auto flex-none"
+              @change="onFallbackEngineChange"
             >
-              {{ engine.name }}
-            </option>
-            <option value="other">Other…</option>
-          </select>
+              <option
+                v-for="engine in searchEngines"
+                :key="engine.key"
+                :value="engine.key"
+              >
+                {{ engine.name }}
+              </option>
+              <option value="other">Other…</option>
+            </select>
+            <input
+              v-model="testQuery"
+              type="text"
+              class="input flex-1"
+              placeholder="e.g. !gh vuejs/core"
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <button
+              class="btn-icon"
+              type="submit"
+              :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'"
+              :disabled="!testMatch.url"
+              :class="testMatch.url ? 'text-[#1a1a1a] dark:text-[#f1f1f1]' : 'text-[#aaa] dark:text-[#555]'"
+            >
+              <span class="i-ph-arrow-square-out-duotone text-xl" aria-hidden="true"></span>
+            </button>
+          </form>
           <input
             v-if="showCustomInput"
             v-model="customEngineUrl"
             type="text"
-            class="input max-w-[400px] w-full"
+            class="input w-full mt-3"
             placeholder="https://kagi.com/search?q={{{s}}}"
             spellcheck="false"
             @input="onCustomEngineUrlChange"
           />
         </div>
+        <code v-if="testQuery.trim()" class="mt-4 block text-sm break-all text-[#1a7a1a] dark:text-[#4ade80]">{{ testMatch.url }}</code>
       </section>
-      <section class="mt-25 text-left">
+      <section class="mt-10">
         <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
           <h2 class="text-[22px]">Your Bangs</h2>
           <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
