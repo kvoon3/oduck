@@ -1,4 +1,4 @@
-import { defineConfig, presetMini, presetIcons, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetMini, presetIcons, presetWebFonts, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   content: {
@@ -18,6 +18,12 @@ export default defineConfig({
       extraProperties: {
         display: 'inline-block',
         'vertical-align': 'middle',
+      },
+    }),
+    presetWebFonts({
+      provider: 'google',
+      fonts: {
+        sans: 'Inter:400,500,600,700',
       },
     }),
   ],

@@ -27,9 +27,6 @@ importers:
       '@iconify-json/ph':
         specifier: ^1.2.2
         version: 1.2.2
-      '@unocss/preset-icons':
-        specifier: ^66.7.0
-        version: 66.7.0
       taze:
         specifier: ^19.14.1
         version: 19.14.1

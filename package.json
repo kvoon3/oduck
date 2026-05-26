@@ -1,5 +1,5 @@
 {
-  "name": "unduck",
+  "name": "oduck",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -15,7 +15,6 @@
     "@cloudflare/vite-plugin": "^1.38.0",
     "@iconify-json/carbon": "^1.2.22",
     "@iconify-json/ph": "^1.2.2",
-    "@unocss/preset-icons": "^66.7.0",
     "taze": "^19.14.1",
     "typescript": "~6.0.3",
     "unocss": "^66.7.0",
