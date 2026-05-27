@@ -467,7 +467,7 @@ onUnmounted(() => {
                 </div>
                 <input v-model="searchQuery" class="input pl-11 pr-10" type="text" placeholder="Search your bangs..." />
                 <button type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 btn px-2 py-1 rounded text-xs text-neutral-500 transition duration-150 hover:(text-neutral-700 bg-neutral-200/70) dark:(text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800)"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-sm btn-ghost rounded text-xs text-neutral-500 transition duration-150"
                   :disabled="!customBangs.length"
                   @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
                   {{ filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all' }}
