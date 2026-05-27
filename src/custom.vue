@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, shallowRef } from "vue";
+import Fuse from "fuse.js";
 import { bangs } from "./bang";
 import {
   type Bang,
@@ -14,6 +15,7 @@ import BangModal from "./components/BangModal.vue";
 import BangAddModal from "./components/BangAddModal.vue";
 import BangSearch from "./components/BangSearch.vue";
 import BangList from "./components/BangList.vue";
+import BangFilterPopup from "./components/BangFilterPopup.vue";
 import RemoveConfirmModal from "./components/RemoveConfirmModal.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
 
@@ -33,6 +35,9 @@ const syncingSourceIndex = shallowRef<number | null>(null);
 const sourceRemoveIndex = shallowRef<number | null>(null);
 const sourceRemoveVisible = shallowRef(false);
 
+const filter = ref<null | boolean>(null);
+const searchQuery = ref("");
+
 const removeConfirmIndex = ref<number | null>(null);
 const removeConfirmVisible = ref(false);
 const removingBang = computed<CustomBang | null>(() => {
@@ -41,6 +46,24 @@ const removingBang = computed<CustomBang | null>(() => {
 const removingSource = computed<CustomBangSource | null>(() => {
   return sourceRemoveIndex.value !== null ? (sources.value[sourceRemoveIndex.value] ?? null) : null;
 });
+const filteredCustomBangs = computed(() => {
+  let result = customBangs.value;
+  if (filter.value !== null) {
+    result = result.filter((b) => b.enabled === filter.value);
+  }
+  if (searchQuery.value.trim()) {
+    const fuse = new Fuse(result, {
+      keys: ["t", "s", "sc"],
+      threshold: 0.3,
+    });
+    result = fuse.search(searchQuery.value.trim()).map((r) => r.item);
+  }
+  return result;
+});
+const enabledCount = computed(() => customBangs.value.filter((b) => b.enabled !== false).length);
+const totalCount = computed(() => customBangs.value.length);
+const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b) => b.enabled !== false).length);
+const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
 const allBangs = computed<Bang[]>(() => [...getActiveCustomBangs(), ...bangs]);
 
 function getActiveCustomBangs(): Bang[] {
@@ -142,21 +165,25 @@ function handleToggle(index: number, checked: boolean) {
 }
 
 function toggleBang(index: number) {
-  const bang = customBangs.value[index];
+  const bang = filteredCustomBangs.value[index];
   if (!bang) return;
-  handleToggle(index, bang.enabled === false);
+  const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
+  if (realIdx === -1) return;
+  handleToggle(realIdx, bang.enabled === false);
 }
 
 function handleEdit(index: number) {
-  const bang = customBangs.value[index];
+  const bang = filteredCustomBangs.value[index];
   if (!bang) return;
-  openModal({ ...bang }, index);
+  openModal({ ...bang }, customBangs.value.findIndex((b) => b.t === bang.t));
 }
 
 function handleRemove(index: number) {
-  const bang = customBangs.value[index];
+  const bang = filteredCustomBangs.value[index];
   if (!bang) return;
-  removeConfirmIndex.value = index;
+  const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
+  if (realIdx === -1) return;
+  removeConfirmIndex.value = realIdx;
   removeConfirmVisible.value = true;
 }
 
@@ -219,6 +246,28 @@ function downloadJson(filename: string, value: unknown) {
 
 function handleExport() {
   downloadJson("custom-bang.json", customBangs.value);
+}
+
+function handleFilterSet(value: null | boolean) {
+  filter.value = value;
+}
+
+function handleEnableAll() {
+  const targets =
+    filter.value !== null ? filteredCustomBangs.value : customBangs.value;
+  for (const bang of targets) {
+    bang.enabled = true;
+  }
+  saveToStorage();
+}
+
+function handleDisableAll() {
+  const targets =
+    filter.value !== null ? filteredCustomBangs.value : customBangs.value;
+  for (const bang of targets) {
+    bang.enabled = false;
+  }
+  saveToStorage();
 }
 
 function handleAdd() {
@@ -402,22 +451,49 @@ onUnmounted(() => {
 
         <section class="mt-10">
           <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
-            <h2 class="text-[22px]">Your Bangs</h2>
-            <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
-              <button class="btn-primary lt-sm:flex-1" type="button" @click="handleAdd">
-               Add
-              </button>
-              <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleExport">
-                Export
-              </button>
-            </div>
           </div>
 
           <p v-if="customBangs.length === 0"
             class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
             No custom bangs yet.
           </p>
-          <BangList v-else :custom-bangs="customBangs" @toggle="toggleBang" @edit="handleEdit" @remove="handleRemove" />
+          <template v-else>
+            <section class="flex justify-between items-center gap-2 mb4">
+
+              <div class="relative my-2 flex-1">
+                <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
+                  <BangFilterPopup :filter="filter" :all-count="totalCount" :enabled-count="enabledCount"
+                    :disabled-count="totalCount - enabledCount" @set-filter="handleFilterSet" />
+                </div>
+                <input v-model="searchQuery" class="input pl-11 pr-10" type="text" placeholder="Search your bangs..." />
+                <button type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 btn px-2 py-1 rounded text-xs text-neutral-500 transition duration-150 hover:(text-neutral-700 bg-neutral-200/70) dark:(text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800)"
+                  :disabled="!customBangs.length"
+                  @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
+                  {{ filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all' }}
+                </button>
+              </div>
+
+              <section class="flex gap-2">
+                <button class="btn-primary py2.5" type="button" @click="handleAdd">
+                  Add
+                </button>
+                <button class="btn-secondary py2.5" type="button" @click="handleExport">
+                  Export
+                </button>
+              </section>
+            </section>
+            <p v-if="filteredCustomBangs.length === 0"
+              class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
+              No bangs match this filter.
+            </p>
+            <BangList v-else :custom-bangs="filteredCustomBangs" @toggle="toggleBang" @edit="handleEdit"
+              @remove="handleRemove" />
+            <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
+              {{ filteredCustomBangs.length }} of {{ totalCount }}
+              {{ totalCount === 1 ? 'bang' : 'bangs' }}
+            </p>
+          </template>
         </section>
 
       </div>
@@ -431,8 +507,8 @@ onUnmounted(() => {
       <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
         @confirm="confirmRemove" />
 
-      <SourceRemoveConfirmModal :visible="sourceRemoveVisible" :source="removingSource" @close="closeSourceRemoveConfirm"
-        @confirm="confirmRemoveSource" />
+      <SourceRemoveConfirmModal :visible="sourceRemoveVisible" :source="removingSource"
+        @close="closeSourceRemoveConfirm" @confirm="confirmRemoveSource" />
     </div>
     <oduck-footer />
   </div>
