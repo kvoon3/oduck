@@ -14,14 +14,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal :visible="visible" @close="$emit('close')">
-    <div class="flex items-center justify-between gap-4">
-      <h3 class="text-[18px]">Remove Source</h3>
-      <button class="btn-close" type="button" aria-label="Close" @click="$emit('close')">
-        x
-      </button>
-    </div>
-    <p class="mt-4 text-sm text-[#666] dark:text-[#aaa]">
+  <BaseModal :visible="visible" title="Remove Source" @close="$emit('close')">
+    <div class="px-7 pb-4 lt-sm:px-5 lt-sm:pb-2">
+    <p class="text-sm text-[#666] dark:text-[#aaa]">
       Are you sure you want to remove this subscription source?
     </p>
     <div class="mt-4 p-4 border rounded-md bg-[#fafafa] dark:bg-[#171717] text-sm">
@@ -40,13 +35,19 @@ const emit = defineEmits<{
         </div>
       </div>
     </div>
-    <div class="flex gap-2 mt-6 justify-end">
-      <button class="btn-secondary" type="button" @click="$emit('close')">
-        Cancel
-      </button>
-      <button class="btn-danger" type="button" @click="$emit('confirm')">
-        Remove
-      </button>
     </div>
+
+    <template #footer>
+      <div class="p-7 pt-0 lt-sm:p-5 lt-sm:pt-0">
+      <div class="flex gap-2 justify-end">
+        <button class="btn-secondary" type="button" @click="$emit('close')">
+          Cancel
+        </button>
+        <button class="btn-danger" type="button" @click="$emit('confirm')">
+          Remove
+        </button>
+      </div>
+      </div>
+    </template>
   </BaseModal>
 </template>

@@ -68,22 +68,8 @@ function saveSource(index: number) {
 </script>
 
 <template>
-  <BaseModal :visible="visible" aria-labelledby="custom-bang-import-title" @close="$emit('close')">
-    <div class="flex items-center justify-between gap-4">
-      <h3 id="custom-bang-import-title" class="text-[18px]">
-        Import Bangs
-      </h3>
-      <button
-        class="btn-close"
-        type="button"
-        aria-label="Close"
-        @click="$emit('close')"
-      >
-        x
-      </button>
-    </div>
-
-    <form class="grid gap-8 mt-6" @submit.prevent="handleSubmit">
+  <BaseModal :visible="visible" title="Import Bangs" @close="$emit('close')">
+    <form class="grid gap-8 p-7 pt-0 lt-sm:p-5 lt-sm:pt-0" @submit.prevent="handleSubmit">
       <label class="w-full">
         <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf] mr2">
           Import from file:

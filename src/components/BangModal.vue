@@ -103,23 +103,10 @@ function handleSubmit() {
 </script>
 
 <template>
-  <BaseModal :visible="visible" aria-labelledby="custom-bang-dialog-title" @close="$emit('close')">
-    <div class="flex items-center justify-between gap-4">
-      <h3 id="custom-bang-dialog-title" class="text-[18px]">
-        {{ title }}
-      </h3>
-      <button
-        class="btn-close"
-        type="button"
-        aria-label="Close"
-        @click="$emit('close')"
-      >
-        ×
-      </button>
-    </div>
-
+  <BaseModal :visible="visible" :title="title" @close="$emit('close')">
     <form
-      class="grid gap-4 mt-6"
+      id="bang-form"
+      class="grid gap-4 p-7 pt-0 lt-sm:p-5 lt-sm:pt-0"
       @submit.prevent="handleSubmit"
     >
       <label class="grid gap-1.5 w-full">
@@ -177,9 +164,14 @@ function handleSubmit() {
       <p v-if="error" class="error-text">
         {{ error }}
       </p>
-      <button class="btn-primary mt-1 py-2.5" type="submit">
+    </form>
+
+    <template #footer>
+      <div class="p-7 pt-0 lt-sm:p-5 lt-sm:pt-0">
+      <button class="btn-primary py-2.5" type="submit" form="bang-form">
         {{ submitLabel }}
       </button>
-    </form>
+      </div>
+    </template>
   </BaseModal>
 </template>
