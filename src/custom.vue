@@ -400,15 +400,34 @@ onUnmounted(() => {
 
       <BangSearch :all-bangs="allBangs" mode="new-tab" />
 
-      <BangList
-        :custom-bangs="customBangs"
-        @add="openModal()"
-        @import="handleImport"
-        @export="handleExport"
-        @toggle="toggleBang"
-        @edit="handleEdit"
-        @remove="handleRemove"
-      />
+      <section class="mt-10">
+        <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
+          <h2 class="text-[22px]">Your Bangs</h2>
+          <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
+            <button class="btn-primary lt-sm:flex-1" type="button" @click="openModal()">
+              Add Bang
+            </button>
+            <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleImport">
+              Import
+            </button>
+            <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleExport">
+              Export
+            </button>
+          </div>
+        </div>
+
+        <p v-if="customBangs.length === 0"
+          class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
+          No custom bangs yet.
+        </p>
+        <BangList
+          v-else
+          :custom-bangs="customBangs"
+          @toggle="toggleBang"
+          @edit="handleEdit"
+          @remove="handleRemove"
+        />
+      </section>
 
       <input ref="fileInput" class="hidden" type="file" accept="application/json,.json" @change="onFileChange" />
     </div>
