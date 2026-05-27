@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { onClickOutside } from "@vueuse/core";
 
 export interface SelectOption {
   label: string;
@@ -94,18 +95,8 @@ function onListKeydown(event: KeyboardEvent) {
   }
 }
 
-function onDocumentPointerDown(event: PointerEvent) {
-  if (!rootRef.value?.contains(event.target as Node)) {
-    close();
-  }
-}
-
-onMounted(() => {
-  document.addEventListener("pointerdown", onDocumentPointerDown);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("pointerdown", onDocumentPointerDown);
+onClickOutside(rootRef, () => {
+  close();
 });
 </script>
 

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useTemplateRef } from "vue";
+import { onClickOutside } from "@vueuse/core";
+
 defineProps<{
   visible: boolean;
   ariaLabelledby?: string;
@@ -9,9 +12,11 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-function onOverlayClick(e: MouseEvent) {
-  if (e.target === e.currentTarget) emit("close");
-}
+const panelRef = useTemplateRef<HTMLElement>("panelRef");
+
+onClickOutside(panelRef, () => {
+  emit("close");
+});
 </script>
 
 <template>
@@ -22,10 +27,10 @@ function onOverlayClick(e: MouseEvent) {
       role="dialog"
       aria-modal="true"
       :aria-labelledby="ariaLabelledby"
-      @click="onOverlayClick"
       @keydown.escape="$emit('close')"
     >
       <div
+        ref="panelRef"
         class="modal-panel w-[min(100%,32rem)] p-7 border rounded-lg bg-white shadow-[0_18px_55px_rgb(0_0_0_/_0.18)] lt-sm:p-5 dark:bg-[#131313]"
         :class="{ 'flex flex-col': height }"
         :style="height ? { height } : undefined"
