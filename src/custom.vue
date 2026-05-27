@@ -11,7 +11,7 @@ import {
   parseCustomBangs,
 } from "./custom-bang";
 import BangModal from "./components/BangModal.vue";
-import BangImportModal from "./components/BangImportModal.vue";
+import BangAddModal from "./components/BangAddModal.vue";
 import BangSearch from "./components/BangSearch.vue";
 import BangList from "./components/BangList.vue";
 import RemoveConfirmModal from "./components/RemoveConfirmModal.vue";
@@ -26,8 +26,7 @@ const editingBang = ref<CustomBang | null>(null);
 const editingIndex = ref<number | null>(null);
 const modalVisible = ref(false);
 
-const fileInput = ref<HTMLInputElement | null>(null);
-const importModalVisible = shallowRef(false);
+const addModalVisible = shallowRef(false);
 const importLoading = shallowRef(false);
 const importError = shallowRef("");
 const syncingSourceIndex = shallowRef<number | null>(null);
@@ -194,6 +193,16 @@ function handleModalSubmit(bang: CustomBang) {
   saveToStorage();
 }
 
+function handleAddBangSubmit(bang: CustomBang) {
+  if (customBangs.value.find((b) => b.t === bang.t)) {
+    importError.value = "A bang with this shortcut already exists.";
+    return;
+  }
+  customBangs.value.push(bang);
+  addModalVisible.value = false;
+  saveToStorage();
+}
+
 function downloadJson(filename: string, value: unknown) {
   const blob = new Blob([JSON.stringify(value, null, 2)], {
     type: "application/json",
@@ -212,27 +221,31 @@ function handleExport() {
   downloadJson("custom-bang.json", customBangs.value);
 }
 
-function handleImport() {
+function handleAdd() {
   importError.value = "";
-  importModalVisible.value = true;
+  addModalVisible.value = true;
 }
 
-function closeImportModal() {
+function closeAddModal() {
   if (importLoading.value) return;
-  importModalVisible.value = false;
+  addModalVisible.value = false;
   importError.value = "";
 }
 
-function chooseImportFile() {
-  importError.value = "";
-  fileInput.value?.click();
+async function handleAddFile(file: File) {
+  try {
+    applyImportedBangs(parseCustomBangs(JSON.parse(await file.text())));
+  } catch (error) {
+    importError.value =
+      error instanceof Error ? error.message : "Failed to import custom bang config.";
+  }
 }
 
 function applyImportedBangs(parsed: CustomBang[]) {
   customBangs.value = dedupeBangs(parsed);
   sources.value = [];
   closeModal();
-  importModalVisible.value = false;
+  addModalVisible.value = false;
   saveToStorage();
   saveSourceUrls();
 }
@@ -265,7 +278,7 @@ async function syncSourceAtIndex(index: number) {
   } catch (error) {
     importError.value =
       error instanceof Error ? error.message : "Failed to sync custom bang source.";
-    importModalVisible.value = true;
+    addModalVisible.value = true;
   } finally {
     syncingSourceIndex.value = null;
   }
@@ -291,20 +304,6 @@ async function importFromUrl(sourceUrl: string) {
       error instanceof Error ? error.message : "Failed to import custom bang config.";
   } finally {
     importLoading.value = false;
-  }
-}
-
-async function onFileChange(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-
-  try {
-    applyImportedBangs(parseCustomBangs(JSON.parse(await file.text())));
-  } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : "Failed to import custom bang config.";
-  } finally {
-    if (fileInput.value) fileInput.value.value = "";
   }
 }
 
@@ -368,8 +367,8 @@ function handleEsc(event: KeyboardEvent) {
       closeSourceRemoveConfirm();
     } else if (removeConfirmVisible.value) {
       closeRemoveConfirm();
-    } else if (importModalVisible.value) {
-      closeImportModal();
+    } else if (addModalVisible.value) {
+      closeAddModal();
     } else if (modalVisible.value) {
       closeModal();
     }
@@ -405,11 +404,8 @@ onUnmounted(() => {
           <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
             <h2 class="text-[22px]">Your Bangs</h2>
             <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
-              <button class="btn-primary lt-sm:flex-1" type="button" @click="openModal()">
-                Add Bang
-              </button>
-              <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleImport">
-                Import
+              <button class="btn-primary lt-sm:flex-1" type="button" @click="handleAdd">
+               Add
               </button>
               <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleExport">
                 Export
@@ -424,11 +420,11 @@ onUnmounted(() => {
           <BangList v-else :custom-bangs="customBangs" @toggle="toggleBang" @edit="handleEdit" @remove="handleRemove" />
         </section>
 
-        <input ref="fileInput" class="hidden" type="file" accept="application/json,.json" @change="onFileChange" />
       </div>
-      <BangImportModal :visible="importModalVisible" :error="importError" :loading="importLoading" :sources="sources"
-        :syncing-source-index="syncingSourceIndex" @close="closeImportModal" @file="chooseImportFile"
-        @edit-source="editSource" @remove-source="requestRemoveSource" @sync-source="syncSource" @url="importFromUrl" />
+      <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading" :sources="sources"
+        :syncing-source-index="syncingSourceIndex" @close="closeAddModal" @add-bang="handleAddBangSubmit"
+        @import-file="handleAddFile" @edit-source="editSource" @remove-source="requestRemoveSource"
+        @sync-source="syncSource" @import-url="importFromUrl" />
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 

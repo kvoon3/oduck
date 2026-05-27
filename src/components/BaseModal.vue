@@ -2,6 +2,7 @@
 defineProps<{
   visible: boolean;
   ariaLabelledby?: string;
+  height?: string;
 }>();
 
 const emit = defineEmits<{
@@ -24,7 +25,11 @@ function onOverlayClick(e: MouseEvent) {
       @click="onOverlayClick"
       @keydown.escape="$emit('close')"
     >
-      <div class="modal-panel w-[min(100%,32rem)] p-7 border rounded-lg bg-white shadow-[0_18px_55px_rgb(0_0_0_/_0.18)] lt-sm:p-5 dark:bg-[#131313]">
+      <div
+        class="modal-panel w-[min(100%,32rem)] p-7 border rounded-lg bg-white shadow-[0_18px_55px_rgb(0_0_0_/_0.18)] lt-sm:p-5 dark:bg-[#131313]"
+        :class="{ 'flex flex-col': height }"
+        :style="height ? { height } : undefined"
+      >
         <slot />
       </div>
     </div>
