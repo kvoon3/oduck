@@ -26,7 +26,7 @@ watch(items, () => {
 </script>
 
 <template>
-  <div v-bind="containerProps" class="h-[55vh]">
+  <div v-bind="containerProps" class="h-120">
     <div v-bind="wrapperProps">
       <div v-for="item in list" :key="item.data.t + '-' + item.index"
         class="mb1 grid grid-cols-[minmax(0,1fr)_auto] items-center px-3.5 py-2.5 cursor-pointer transition duration-150"

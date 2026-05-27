@@ -449,7 +449,16 @@ onUnmounted(() => {
 
         <BangSearch :all-bangs="allBangs" mode="new-tab" />
 
-        <section class="mt-10">
+        <div class="flex items-center gap-3 my-8">
+          <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <a href="/search" title="Back to search"
+            class="text-neutral-400 hover:text-neutral-600 dark:(text-neutral-500 hover:text-neutral-300) transition">
+            <div class="i-ph-eye-closed-duotone text-lg" />
+          </a>
+          <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+
+        <section>
           <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
           </div>
 
