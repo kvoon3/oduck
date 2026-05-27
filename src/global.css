@@ -6,7 +6,9 @@ html {
 html,
 body {
   height: 100dvh;
-  overflow: hidden;
+  overflow-y: hidden;
+  padding: 0;
+  margin: 0;
 }
 
 body {

@@ -388,76 +388,56 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+  <div class="grid grid-rows-[min-content_1fr_min-content] h-dvh">
     <oduck-header />
-    <div class="max-w-[46rem] w-full">
-      <div class="text-center">
-        <h1>Custom Bangs</h1>
-        <p>
-          Create your own <code>!bang</code> shortcuts.
-        </p>
-      </div>
-
-      <BangSearch :all-bangs="allBangs" mode="new-tab" />
-
-      <section class="mt-10">
-        <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
-          <h2 class="text-[22px]">Your Bangs</h2>
-          <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
-            <button class="btn-primary lt-sm:flex-1" type="button" @click="openModal()">
-              Add Bang
-            </button>
-            <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleImport">
-              Import
-            </button>
-            <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleExport">
-              Export
-            </button>
-          </div>
+    <div class="overflow-auto mx4">
+      <div class="mxa max-w-200">
+        <div class="text-center">
+          <h1>Custom Bangs</h1>
+          <p>
+            Create your own <code>!bang</code> shortcuts.
+          </p>
         </div>
 
-        <p v-if="customBangs.length === 0"
-          class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
-          No custom bangs yet.
-        </p>
-        <BangList
-          v-else
-          :custom-bangs="customBangs"
-          @toggle="toggleBang"
-          @edit="handleEdit"
-          @remove="handleRemove"
-        />
-      </section>
+        <BangSearch :all-bangs="allBangs" mode="new-tab" />
 
-      <input ref="fileInput" class="hidden" type="file" accept="application/json,.json" @change="onFileChange" />
+        <section class="mt-10">
+          <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
+            <h2 class="text-[22px]">Your Bangs</h2>
+            <div class="flex gap-2 flex-wrap justify-end lt-sm:(w-full justify-stretch)">
+              <button class="btn-primary lt-sm:flex-1" type="button" @click="openModal()">
+                Add Bang
+              </button>
+              <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleImport">
+                Import
+              </button>
+              <button class="btn-secondary lt-sm:flex-1" type="button" @click="handleExport">
+                Export
+              </button>
+            </div>
+          </div>
+
+          <p v-if="customBangs.length === 0"
+            class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
+            No custom bangs yet.
+          </p>
+          <BangList v-else :custom-bangs="customBangs" @toggle="toggleBang" @edit="handleEdit" @remove="handleRemove" />
+        </section>
+
+        <input ref="fileInput" class="hidden" type="file" accept="application/json,.json" @change="onFileChange" />
+      </div>
+      <BangImportModal :visible="importModalVisible" :error="importError" :loading="importLoading" :sources="sources"
+        :syncing-source-index="syncingSourceIndex" @close="closeImportModal" @file="chooseImportFile"
+        @edit-source="editSource" @remove-source="requestRemoveSource" @sync-source="syncSource" @url="importFromUrl" />
+
+      <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
+
+      <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
+        @confirm="confirmRemove" />
+
+      <SourceRemoveConfirmModal :visible="sourceRemoveVisible" :source="removingSource" @close="closeSourceRemoveConfirm"
+        @confirm="confirmRemoveSource" />
     </div>
-
-    <BangImportModal
-      :visible="importModalVisible"
-      :error="importError"
-      :loading="importLoading"
-      :sources="sources"
-      :syncing-source-index="syncingSourceIndex"
-      @close="closeImportModal"
-      @file="chooseImportFile"
-      @edit-source="editSource"
-      @remove-source="requestRemoveSource"
-      @sync-source="syncSource"
-      @url="importFromUrl"
-    />
-
-    <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
-
-    <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
-      @confirm="confirmRemove" />
-
-    <SourceRemoveConfirmModal
-      :visible="sourceRemoveVisible"
-      :source="removingSource"
-      @close="closeSourceRemoveConfirm"
-      @confirm="confirmRemoveSource"
-    />
-
     <oduck-footer />
   </div>
 </template>

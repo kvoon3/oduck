@@ -7,19 +7,15 @@ class OduckFooter extends HTMLElement {
     style.textContent = `
       :host {
         display: block;
-        position: fixed;
-        bottom: 1rem;
-        left: 0;
-        right: 0;
+        height: min-content;
         text-align: center;
-        z-index: 50;
       }
       div {
         display: inline-flex;
         align-items: center;
         gap: 0.75rem;
         font-size: 0.875rem;
-        line-height: 1.25rem;
+        line-height: 2rem;
         color: #888;
       }
       a {

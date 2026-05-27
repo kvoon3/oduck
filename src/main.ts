@@ -72,9 +72,10 @@ function downloadJson(filename: string, value: unknown) {
 function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
-    <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+    <div class="grid grid-rows-[min-content_1fr_min-content] h-dvh">
       <oduck-header></oduck-header>
-      <div class="max-w-[46rem] w-full text-center flex flex-col gap-8">
+      <div class="overflow-auto mx4">
+      <div class="mxa max-w-[46rem] pt-[12vh] pb-22 px-5 text-center flex flex-col gap-8">
         <section>
           <h1>Od*ck</h1>
           <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank" class="link link-active">all of DuckDuckGo's bangs.</a></p>
@@ -116,6 +117,7 @@ function noSearchDefaultPageRender() {
             <a href="/custom.html" class="link link-active">Manage Custom Bangs →</a>
           </p>
         </section>
+      </div>
       </div>
       <oduck-footer></oduck-footer>
     </div>

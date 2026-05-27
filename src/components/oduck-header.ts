@@ -7,18 +7,17 @@ class OduckHeader extends HTMLElement {
     style.textContent = `
       :host {
         display: block;
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        z-index: 50;
+        height: min-content;
       }
       nav {
         display: flex;
         gap: 0.75rem;
         align-items: center;
         font-size: 0.875rem;
-        line-height: 1.25rem;
+        line-height: 2rem;
         color: #888;
+        margin: 0rem 0.5rem;
+        width: min-content;
       }
       @media (prefers-color-scheme: dark) {
         nav {

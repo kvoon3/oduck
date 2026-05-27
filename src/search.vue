@@ -33,12 +33,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center min-h-screen pt-[12vh] px-5 pb-22">
+  <div class="grid grid-rows-[min-content_1fr_min-content] h-dvh">
     <oduck-header />
-    <div class="max-w-[46rem] w-full">
-      <h1 class="text-center">Od*ck</h1>
+    <div class="overflow-auto mx4">
+      <div class="mxa max-w-[46rem] pt-[12vh] pb-22 px-5">
+        <h1 class="text-center">Od*ck</h1>
 
-      <BangSearch :all-bangs="allBangs" mode="replace" autofocus class="mt-10" />
+        <BangSearch :all-bangs="allBangs" mode="replace" autofocus class="mt-10" />
+      </div>
     </div>
 
     <oduck-footer />
