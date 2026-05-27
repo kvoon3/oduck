@@ -6,7 +6,7 @@ export type CustomBang = Bang & {
 };
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL =
-  "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json";
+  "https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json";
 
 export interface CustomBangSource {
   url: string;

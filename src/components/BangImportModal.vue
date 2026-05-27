@@ -83,24 +83,38 @@ function saveSource(index: number) {
       </button>
     </div>
 
-    <form class="grid gap-4 mt-6" @submit.prevent="handleSubmit">
+    <form class="grid gap-8 mt-6" @submit.prevent="handleSubmit">
+      <label class="w-full">
+        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf] mr2">
+          Import from file:
+        </span>
+        <button class="btn-secondary btn-sm" type="button" :disabled="loading" @click="$emit('file')">
+          Choose File
+        </button>
+      </label>
+      
       <label class="grid gap-1.5 w-full">
         <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
           JSON source URL
         </span>
-        <input
-          v-model="sourceUrl"
-          class="input font-mono"
-          placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
-          spellcheck="false"
-          autocomplete="off"
-          :disabled="loading"
-        />
-      </label>
+        <div class="flex gap-2">
+          <input
+            v-model="sourceUrl"
+            class="input font-mono flex-1"
+            placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
+            spellcheck="false"
+            autocomplete="off"
+            :disabled="loading"
+          />
+          <button class="btn-primary py-2.5 shrink-0" type="submit" :disabled="loading || !sourceUrl.trim()">
+            {{ loading ? "Syncing..." : "Add Source" }}
+          </button>
+        </div>
 
-      <p class="m-0 text-[13px] leading-5 text-[#666] dark:text-[#aaa]">
-        GitHub file links and raw JSON URLs are saved as subscription sources.
-      </p>
+        <p class="m0 mt2 text-[13px] leading-5 text-[#666] dark:text-[#aaa]">
+          GitHub file links and raw JSON URLs are saved as subscription sources.
+        </p>
+      </label>
 
       <div v-if="sources.length > 0" class="grid gap-2">
         <div class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
@@ -151,15 +165,6 @@ function saveSource(index: number) {
       <p v-if="error" class="error-text m-0 text-sm">
         {{ error }}
       </p>
-
-      <div class="grid grid-cols-2 gap-2 lt-sm:grid-cols-1">
-        <button class="btn-primary py-2.5" type="submit" :disabled="loading || !sourceUrl.trim()">
-          {{ loading ? "Syncing..." : "Add Source" }}
-        </button>
-        <button class="btn-secondary py-2.5" type="button" :disabled="loading" @click="$emit('file')">
-          Choose File
-        </button>
-      </div>
     </form>
   </BaseModal>
 </template>
