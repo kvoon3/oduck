@@ -4,11 +4,10 @@ import Fuse from "fuse.js";
 import { bangs } from "./bang";
 import {
   type Bang,
+  type BangOrigin,
   type CustomBang,
   type CustomBangSource,
-  DEFAULT_CUSTOM_BANG_SOURCE_URL,
   loadCustomBangsFromUrl,
-  normalizeCustomBangSourceUrl,
   parseCustomBangs,
 } from "./custom-bang";
 import BangModal from "./components/BangModal.vue";
@@ -18,6 +17,7 @@ import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
 import RemoveConfirmModal from "./components/RemoveConfirmModal.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
+import CleanConfirmModal from "./components/CleanConfirmModal.vue";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 const LS_CUSTOM_BANG_SOURCES = "custom-bang-sources";
@@ -35,7 +35,10 @@ const syncingSourceIndex = shallowRef<number | null>(null);
 const sourceRemoveIndex = shallowRef<number | null>(null);
 const sourceRemoveVisible = shallowRef(false);
 
+const cleanConfirmVisible = shallowRef(false);
+
 const filter = ref<null | boolean>(null);
+const originFilter = ref<null | BangOrigin>(null);
 const searchQuery = ref("");
 
 const removeConfirmIndex = ref<number | null>(null);
@@ -51,6 +54,13 @@ const filteredCustomBangs = computed(() => {
   if (filter.value !== null) {
     result = result.filter((b) => b.enabled === filter.value);
   }
+  if (originFilter.value !== null) {
+    if (originFilter.value === "manual") {
+      result = result.filter((b) => (b.origin ?? "manual") === "manual");
+    } else {
+      result = result.filter((b) => b.origin === originFilter.value);
+    }
+  }
   if (searchQuery.value.trim()) {
     const fuse = new Fuse(result, {
       keys: ["t", "s", "sc"],
@@ -62,6 +72,13 @@ const filteredCustomBangs = computed(() => {
 });
 const enabledCount = computed(() => customBangs.value.filter((b) => b.enabled !== false).length);
 const totalCount = computed(() => customBangs.value.length);
+const manualCount = computed(() => customBangs.value.filter((b) => (b.origin ?? "manual") === "manual").length);
+const sourceCounts = computed(() =>
+  sources.value.map((s) => ({
+    name: s.name,
+    count: customBangs.value.filter((b) => b.origin === s.name).length,
+  })),
+);
 const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b) => b.enabled !== false).length);
 const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
 const allBangs = computed<Bang[]>(() => [...getActiveCustomBangs(), ...bangs]);
@@ -69,7 +86,7 @@ const allBangs = computed<Bang[]>(() => [...getActiveCustomBangs(), ...bangs]);
 function getActiveCustomBangs(): Bang[] {
   return customBangs.value
     .filter((b) => b.enabled !== false)
-    .map(({ enabled: _enabled, ...bang }) => bang);
+    .map(({ enabled: _enabled, origin: _origin, ...bang }) => bang);
 }
 
 function saveToStorage() {
@@ -84,7 +101,11 @@ function loadFromStorage(): CustomBang[] {
   const saved = localStorage.getItem(LS_CUSTOM_BANGS);
   if (!saved) return [];
   try {
-    return parseCustomBangs(JSON.parse(saved));
+    const parsed = parseCustomBangs(JSON.parse(saved));
+    for (const bang of parsed) {
+      if (!bang.origin) bang.origin = "manual";
+    }
+    return parsed;
   } catch (error) {
     console.warn("Ignoring invalid saved custom bang config.", error);
     return [];
@@ -94,22 +115,28 @@ function loadFromStorage(): CustomBang[] {
 function loadSourcesFromStorage(): CustomBangSource[] {
   const saved = localStorage.getItem(LS_CUSTOM_BANG_SOURCES);
   if (!saved) {
-    return [{ url: DEFAULT_CUSTOM_BANG_SOURCE_URL, tags: [] }];
+    return [];
   }
 
   try {
     const parsed = JSON.parse(saved);
     if (!Array.isArray(parsed)) return [];
+    let nameIdx = 0;
     return parsed.flatMap((value): CustomBangSource[] => {
       if (typeof value === "string" && value.trim()) {
-        return [{ url: value, tags: [] }];
+        return [{ name: `Source ${++nameIdx}`, url: value, tags: [] }];
       }
 
       if (!value || typeof value !== "object") return [];
       const source = value as Record<string, unknown>;
       if (typeof source.url !== "string" || !source.url.trim()) return [];
 
+      const sourceName = typeof source.name === "string" && source.name.trim()
+        ? source.name.trim()
+        : `Source ${++nameIdx}`;
+
       return [{
+        name: sourceName,
         url: source.url,
         tags: Array.isArray(source.tags)
           ? source.tags.filter((tag): tag is string => typeof tag === "string")
@@ -120,6 +147,10 @@ function loadSourcesFromStorage(): CustomBangSource[] {
     console.warn("Ignoring invalid custom bang sources config.", error);
     return [];
   }
+}
+
+function findSourceIndexByName(name: string): number {
+  return sources.value.findIndex((s) => s.name === name);
 }
 
 function dedupeBangs(preferredBangs: CustomBang[], fallbackBangs: CustomBang[] = []): CustomBang[] {
@@ -133,16 +164,6 @@ function dedupeBangs(preferredBangs: CustomBang[], fallbackBangs: CustomBang[] =
   }
 
   return result;
-}
-
-function getSourceKey(sourceUrl: string): string {
-  return normalizeCustomBangSourceUrl(sourceUrl.trim());
-}
-
-function findSourceIndex(sourceUrl: string): number {
-  const trimmed = sourceUrl.trim();
-  const nextSourceKey = getSourceKey(trimmed);
-  return sources.value.findIndex((source) => getSourceKey(source.url) === nextSourceKey);
 }
 
 function openModal(bang: CustomBang | null = null, index: number | null = null) {
@@ -225,7 +246,7 @@ function handleAddBangSubmit(bang: CustomBang) {
     importError.value = "A bang with this shortcut already exists.";
     return;
   }
-  customBangs.value.push(bang);
+  customBangs.value.push({ ...bang, origin: "manual" });
   addModalVisible.value = false;
   saveToStorage();
 }
@@ -248,8 +269,29 @@ function handleExport() {
   downloadJson("custom-bang.json", customBangs.value);
 }
 
+function openCleanConfirm() {
+  cleanConfirmVisible.value = true;
+}
+
+function closeCleanConfirm() {
+  cleanConfirmVisible.value = false;
+}
+
+function confirmClean() {
+  customBangs.value = [];
+  sources.value = [];
+  saveToStorage();
+  saveSourceUrls();
+  closeCleanConfirm();
+  closeModal();
+}
+
 function handleFilterSet(value: null | boolean) {
   filter.value = value;
+}
+
+function handleOriginFilterSet(value: null | BangOrigin) {
+  originFilter.value = value;
 }
 
 function handleEnableAll() {
@@ -281,31 +323,33 @@ function closeAddModal() {
   importError.value = "";
 }
 
-async function handleAddFile(file: File) {
+async function importFromFile(sourceName: string, file: File) {
   try {
-    applyImportedBangs(parseCustomBangs(JSON.parse(await file.text())));
+    const parsed = parseCustomBangs(JSON.parse(await file.text()));
+    const existingIndex = findSourceIndexByName(sourceName);
+    if (existingIndex !== -1) {
+      sources.value.splice(existingIndex, 1);
+    }
+    sources.value.push({ name: sourceName, url: "", tags: parsed.map((b) => b.t) });
+    customBangs.value = dedupeBangs(parsed.map((b) => { b.origin = sourceName; return b; }));
+    closeModal();
+    addModalVisible.value = false;
+    saveToStorage();
+    saveSourceUrls();
   } catch (error) {
     importError.value =
       error instanceof Error ? error.message : "Failed to import custom bang config.";
   }
 }
 
-function applyImportedBangs(parsed: CustomBang[]) {
-  customBangs.value = dedupeBangs(parsed);
-  sources.value = [];
-  closeModal();
-  addModalVisible.value = false;
-  saveToStorage();
-  saveSourceUrls();
-}
-
 function replaceSourceBangs(source: CustomBangSource, nextBangs: CustomBang[]) {
+  const tagged = nextBangs.map((b) => ({ ...b, origin: source.name }));
   const previousTags = new Set(source.tags);
   customBangs.value = dedupeBangs([
     ...customBangs.value.filter((bang) => !previousTags.has(bang.t)),
-    ...nextBangs,
+    ...tagged,
   ]);
-  source.tags = nextBangs.map((bang) => bang.t);
+  source.tags = tagged.map((bang) => bang.t);
   saveToStorage();
   saveSourceUrls();
 }
@@ -333,17 +377,17 @@ async function syncSourceAtIndex(index: number) {
   }
 }
 
-async function importFromUrl(sourceUrl: string) {
+async function importFromUrl(sourceName: string, sourceUrl: string) {
   importLoading.value = true;
   importError.value = "";
 
   try {
     const trimmed = sourceUrl.trim();
-    const existingIndex = findSourceIndex(trimmed);
+    const existingIndex = findSourceIndexByName(sourceName);
     const nextBangs = await loadCustomBangsFromUrl(trimmed);
 
     if (existingIndex === -1) {
-      sources.value.push({ url: trimmed, tags: [] });
+      sources.value.push({ name: sourceName, url: trimmed, tags: [] });
       replaceSourceBangs(sources.value[sources.value.length - 1]!, nextBangs);
     } else {
       replaceSourceBangs(sources.value[existingIndex]!, nextBangs);
@@ -365,11 +409,6 @@ async function editSource(index: number, sourceUrl: string) {
   if (!source) return;
 
   const trimmed = sourceUrl.trim();
-  const duplicateIndex = findSourceIndex(trimmed);
-  if (duplicateIndex !== -1 && duplicateIndex !== index) {
-    importError.value = "This source already exists.";
-    return;
-  }
 
   syncingSourceIndex.value = index;
   importError.value = "";
@@ -412,7 +451,9 @@ function confirmRemoveSource() {
 
 function handleEsc(event: KeyboardEvent) {
   if (event.key === "Escape") {
-    if (sourceRemoveVisible.value) {
+    if (cleanConfirmVisible.value) {
+      closeCleanConfirm();
+    } else if (sourceRemoveVisible.value) {
       closeSourceRemoveConfirm();
     } else if (removeConfirmVisible.value) {
       closeRemoveConfirm();
@@ -459,39 +500,41 @@ onUnmounted(() => {
         </div>
 
         <section>
-          <div class="flex items-center justify-between gap-4 lt-sm:(flex-col items-start)">
-          </div>
+          <section class="flex justify-between items-center gap-2 mb4">
+            <div class="relative my-2 flex-1">
+              <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
+                <BangFilterPopup :filter="filter" :origin-filter="originFilter" :all-count="totalCount"
+                  :enabled-count="enabledCount" :disabled-count="totalCount - enabledCount" :manual-count="manualCount"
+                  :sources="sources" :source-counts="sourceCounts" @set-filter="handleFilterSet"
+                  @set-origin-filter="handleOriginFilterSet" />
+              </div>
+              <input v-model="searchQuery" class="input pl-11 pr-10" type="text" placeholder="Search your bangs..." />
+              <button type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-sm btn-ghost rounded text-xs text-neutral-500 transition duration-150"
+                :disabled="!customBangs.length"
+                @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
+                {{ filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all' }}
+              </button>
+            </div>
+
+            <section class="flex gap-2">
+              <button class="btn-primary py2.5" type="button" @click="handleAdd">
+                Add
+              </button>
+              <button class="btn-secondary py2.5" type="button" @click="handleExport">
+                Export
+              </button>
+              <button class="btn-danger py2.5" type="button" :disabled="!customBangs.length" @click="openCleanConfirm">
+                Clean
+              </button>
+            </section>
+          </section>
 
           <p v-if="customBangs.length === 0"
             class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
             No custom bangs yet.
           </p>
           <template v-else>
-            <section class="flex justify-between items-center gap-2 mb4">
-
-              <div class="relative my-2 flex-1">
-                <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
-                  <BangFilterPopup :filter="filter" :all-count="totalCount" :enabled-count="enabledCount"
-                    :disabled-count="totalCount - enabledCount" @set-filter="handleFilterSet" />
-                </div>
-                <input v-model="searchQuery" class="input pl-11 pr-10" type="text" placeholder="Search your bangs..." />
-                <button type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-sm btn-ghost rounded text-xs text-neutral-500 transition duration-150"
-                  :disabled="!customBangs.length"
-                  @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
-                  {{ filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all' }}
-                </button>
-              </div>
-
-              <section class="flex gap-2">
-                <button class="btn-primary py2.5" type="button" @click="handleAdd">
-                  Add
-                </button>
-                <button class="btn-secondary py2.5" type="button" @click="handleExport">
-                  Export
-                </button>
-              </section>
-            </section>
             <p v-if="filteredCustomBangs.length === 0"
               class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
               No bangs match this filter.
@@ -508,7 +551,7 @@ onUnmounted(() => {
       </div>
       <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading" :sources="sources"
         :syncing-source-index="syncingSourceIndex" @close="closeAddModal" @add-bang="handleAddBangSubmit"
-        @import-file="handleAddFile" @edit-source="editSource" @remove-source="requestRemoveSource"
+        @import-file="importFromFile" @edit-source="editSource" @remove-source="requestRemoveSource"
         @sync-source="syncSource" @import-url="importFromUrl" />
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
@@ -518,6 +561,9 @@ onUnmounted(() => {
 
       <SourceRemoveConfirmModal :visible="sourceRemoveVisible" :source="removingSource"
         @close="closeSourceRemoveConfirm" @confirm="confirmRemoveSource" />
+
+      <CleanConfirmModal :visible="cleanConfirmVisible" :count="customBangs.length" @close="closeCleanConfirm"
+        @confirm="confirmClean" />
     </div>
     <oduck-footer />
   </div>

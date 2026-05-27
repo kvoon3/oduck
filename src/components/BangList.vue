@@ -31,7 +31,7 @@ watch(items, () => {
       <div v-for="item in list" :key="item.data.t + '-' + item.index"
         class="mb1 grid grid-cols-[minmax(0,1fr)_auto] items-center px-3.5 py-2.5 cursor-pointer transition duration-150"
         :class="item.data.enabled === false
-          ? 'bg-[#f1f1f1] text-[#777] op-65 hover:op-85 dark:(bg-[#111] text-[#777])'
+          ? 'bg-[#f1f1f1] text-[#777] op-65 hover:op-85 dark:bg-[#111]'
           : 'bg-[#fafafa] text-[#1a1a1a] hover:bg-[#f3f3f3] dark:(bg-[#171717] text-[#f1f1f1] hover:bg-[#1d1d1d])'
           " role="button" tabindex="0" :aria-pressed="item.data.enabled !== false"
         :title="item.data.enabled === false ? 'Disabled' : 'Enabled'" @click="$emit('toggle', item.index)"

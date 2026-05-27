@@ -1,14 +1,18 @@
 import type { bangs } from "./bang";
 
 export type Bang = (typeof bangs)[number];
+export type BangOrigin = string;
+
 export type CustomBang = Bang & {
   enabled?: boolean;
+  origin?: BangOrigin;
 };
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL =
   "https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json";
 
 export interface CustomBangSource {
+  name: string;
   url: string;
   tags: string[];
 }

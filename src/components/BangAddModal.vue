@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, computed, shallowRef, nextTick } from "vue";
+import { watch, ref, computed, shallowRef } from "vue";
 import type { CustomBang, CustomBangSource } from "../custom-bang";
 import { parseCustomBangs } from "../custom-bang";
 import BaseModal from "./BaseModal.vue";
@@ -15,9 +15,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
   addBang: [bang: CustomBang];
-  importFile: [file: File];
-  importUrl: [sourceUrl: string];
-  editSource: [index: number, sourceUrl: string];
+  importFile: [name: string, file: File];
+  importUrl: [name: string, sourceUrl: string];
   removeSource: [index: number];
   syncSource: [index: number];
 }>();
@@ -30,6 +29,21 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
+const recommendedSources = [
+  { name: 'Kagi', icon: 'i-simple-icons-kagi', url: 'https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json' },
+  { name: 'Oduck', icon: 'i-simple-icons-duckduckgo', url: 'https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json' },
+] as const;
+
+const uninstalledRecommendations = computed(() =>
+  recommendedSources.filter(
+    rec => !props.sources.some(s => s.name === rec.name)
+  )
+);
+
+function findRecommended(name: string) {
+  return recommendedSources.find(rec => rec.name === name);
+}
+
 const activeTab = ref<TabId>("manual");
 
 // Manual form
@@ -41,12 +55,11 @@ const manualError = ref("");
 
 // File
 const fileInput = shallowRef<HTMLInputElement | null>(null);
+const fileSourceName = ref("");
 
 // URL
 const sourceUrl = ref("");
-const editingSourceIndex = shallowRef<number | null>(null);
-const editingSourceUrl = ref("");
-const editingSourceTextarea = shallowRef<HTMLTextAreaElement | null>(null);
+const sourceName = ref("");
 
 function reset() {
   tag.value = "";
@@ -55,7 +68,8 @@ function reset() {
   searchUrl.value = "";
   manualError.value = "";
   sourceUrl.value = "";
-  cancelEditSource();
+  sourceName.value = "";
+  fileSourceName.value = "";
 }
 
 watch(
@@ -114,8 +128,9 @@ function handleManualSubmit() {
 }
 
 function handleUrlSubmit() {
-  const trimmed = sourceUrl.value.trim();
-  if (trimmed) emit("importUrl", trimmed);
+  const trimmedName = sourceName.value.trim();
+  const trimmedUrl = sourceUrl.value.trim();
+  if (trimmedName && trimmedUrl) emit("importUrl", trimmedName, trimmedUrl);
 }
 
 function chooseFile() {
@@ -125,34 +140,11 @@ function chooseFile() {
 function onFileChange(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (!file) return;
-  emit("importFile", file);
-}
-
-async function startEditSource(index: number, url: string) {
-  editingSourceIndex.value = index;
-  editingSourceUrl.value = url;
-  await nextTick();
-  editingSourceTextarea.value?.focus();
-}
-
-function setEditingSourceTextarea(element: Element | null) {
-  editingSourceTextarea.value = element instanceof HTMLTextAreaElement
-    ? element
-    : null;
-}
-
-function cancelEditSource() {
-  editingSourceIndex.value = null;
-  editingSourceUrl.value = "";
-  editingSourceTextarea.value = null;
-}
-
-function saveSource(index: number) {
-  const trimmed = editingSourceUrl.value.trim();
-  if (!trimmed) return;
-
-  emit("editSource", index, trimmed);
-  cancelEditSource();
+  emit(
+    "importFile",
+    fileSourceName.value.trim() || `File ${new Date().toLocaleDateString()}`,
+    file
+  );
 }
 </script>
 
@@ -255,6 +247,19 @@ function saveSource(index: number) {
 
     <!-- File tab -->
     <div v-else-if="activeTab === 'file'" key="file" class="grid gap-4 mt-6">
+      <label class="grid gap-1.5 w-full">
+        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+          Source name
+        </span>
+        <input
+          v-model="fileSourceName"
+          class="input"
+          placeholder="e.g. My Bangs"
+          spellcheck="false"
+          autocomplete="off"
+          :disabled="loading"
+        />
+      </label>
       <input
         ref="fileInput"
         class="hidden"
@@ -274,6 +279,19 @@ function saveSource(index: number) {
     <div v-else-if="activeTab === 'url'" key="url" class="grid gap-6 mt-6">
       <label class="grid gap-1.5 w-full">
         <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+          Source name
+        </span>
+        <input
+          v-model="sourceName"
+          class="input"
+          placeholder="e.g. Kagi"
+          spellcheck="false"
+          autocomplete="off"
+          :disabled="loading"
+        />
+      </label>
+      <label class="grid gap-1.5 w-full">
+        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
           JSON source URL
         </span>
         <div class="flex gap-2">
@@ -285,58 +303,70 @@ function saveSource(index: number) {
             autocomplete="off"
             :disabled="loading"
           />
-          <button class="btn-primary py-2.5 shrink-0" type="button" :disabled="loading || !sourceUrl.trim()" @click="handleUrlSubmit">
+          <button class="btn-primary py-2.5 shrink-0" type="button" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()" @click="handleUrlSubmit">
             {{ loading ? "Syncing..." : "Add Source" }}
           </button>
         </div>
-        <p class="m0 mt2 text-[13px] leading-5 text-[#666] dark:text-[#aaa]">
-          GitHub file links and raw JSON URLs are saved as subscription sources.
-        </p>
       </label>
 
-      <div v-if="sources.length > 0" class="grid gap-2">
-        <div class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-          Sources
+      <div v-if="uninstalledRecommendations.length > 0">
+        <p class="text-xs font-medium text-[#888] dark:text-[#666] mb-3">
+          Recommended
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            v-for="rec in uninstalledRecommendations"
+            :key="rec.name"
+            class="flex flex-col items-center gap-2 rounded-lg border border-dashed p-4 bg-transparent cursor-pointer transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/50"
+            :disabled="loading"
+            @click="emit('importUrl', rec.name, rec.url)"
+          >
+            <div :class="rec.icon" class="text-2xl" />
+            <span class="text-xs font-medium">{{ rec.name }}</span>
+            <span class="btn-primary btn-xs mt-0.5">Add</span>
+          </button>
         </div>
-        <div
-          v-for="(source, index) in sources"
-          :key="source.url"
-          class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md bg-neutral-200/45 px-2.5 py-2 dark:bg-neutral-800/70 lt-sm:grid-cols-1"
-        >
-          <textarea
-            v-if="editingSourceIndex === index"
-            :ref="setEditingSourceTextarea"
-            v-model="editingSourceUrl"
-            class="input min-h-[4.75em] resize-none font-mono leading-5 py-1.5"
-            rows="2"
-            spellcheck="false"
-            autocomplete="off"
-            :disabled="loading || syncingSourceIndex !== null"
-            @blur="cancelEditSource"
-            @keydown.enter.stop.prevent="saveSource(index)"
-            @keydown.escape.stop.prevent="cancelEditSource"
-          />
-          <button
-            v-else
-            class="min-w-0 cursor-text truncate border-none bg-transparent p-0 text-left font-mono text-[12px] text-[#555] outline-none focus-visible:(ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(text-[#bbb] focus-visible:ring-offset-[#101010])"
-            type="button"
-            :disabled="loading || syncingSourceIndex !== null || editingSourceIndex !== null"
-            :title="source.url"
-            @click="startEditSource(index, source.url)"
+      </div>
+
+      <div v-if="sources.length > 0">
+        <p class="text-xs font-medium text-[#888] dark:text-[#666] mb-3">
+          Installed
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div
+            v-for="(source, index) in sources"
+            :key="source.name"
+            class="relative flex flex-col items-center gap-2 rounded-lg border border-dashed p-4 bg-transparent"
           >
-            {{ source.url }}
-          </button>
-          <button
-            class="btn-secondary btn-sm"
-            type="button"
-            :disabled="loading || syncingSourceIndex !== null || editingSourceIndex !== null"
-            @click="$emit('syncSource', index)"
-          >
-            {{ syncingSourceIndex === index ? "Syncing..." : "Sync" }}
-          </button>
-          <button class="btn-danger btn-sm" type="button" :disabled="loading || syncingSourceIndex !== null || editingSourceIndex !== null" @click="$emit('removeSource', index)">
-            Remove
-          </button>
+
+            <div class="absolute top-1 left-2 flex items-center gap-3">
+              <a
+                :href="source.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                cursor-pointer
+              >
+                <button class="size-4 i-ph-link-duotone" />
+              </a>
+            </div>
+            <div class="absolute top-1 right-1 flex items-center gap-3">
+              <button
+                class="size-4 i-ph-x-circle-duotone"
+                :disabled="loading || syncingSourceIndex !== null"
+                @click="$emit('removeSource', index)"
+              />
+            </div>
+            <div :class="findRecommended(source.name)?.icon ?? 'i-carbon-link'" class="text-2xl" />
+            <span class="text-xs font-medium">{{ source.name }}</span>
+            <button
+              class="btn-primary btn-xs mt-0.5"
+              type="button"
+              :disabled="loading || syncingSourceIndex !== null"
+              @click="$emit('syncSource', index)"
+            >
+              {{ syncingSourceIndex === index ? "Syncing..." : "Sync" }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

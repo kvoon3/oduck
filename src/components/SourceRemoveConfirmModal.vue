@@ -27,6 +27,10 @@ const emit = defineEmits<{
     <div class="mt-4 p-4 border rounded-md bg-[#fafafa] dark:bg-[#171717] text-sm">
       <div class="grid gap-2">
         <div class="flex gap-2">
+          <span class="flex-none w-16 text-[#888] dark:text-[#666]">Name</span>
+          <strong>{{ source?.name }}</strong>
+        </div>
+        <div class="flex gap-2">
           <span class="flex-none w-16 text-[#888] dark:text-[#666]">URL</span>
           <code class="break-all">{{ source?.url }}</code>
         </div>

@@ -1,12 +1,12 @@
 [
   {
     "c": "Custom",
-    "d": "chatgpt.com",
+    "d": "xiaohongshu.com",
     "enabled": true,
     "r": 0,
-    "s": "ChatGPT",
+    "s": "xhs",
     "sc": "Custom",
     "t": "c",
-    "u": "https://chatgpt.com?q={{{s}}}"
+    "u": "https://www.xiaohongshu.com/search_result?keyword={{{s}}}"
   }
 ]
