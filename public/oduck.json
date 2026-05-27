@@ -1,0 +1,62 @@
+[
+  {
+    "c": "Social",
+    "d": "xiaohongshu.com",
+    "enabled": true,
+    "r": 0,
+    "s": "xhs",
+    "sc": "Social",
+    "t": "xhs",
+    "u": "https://www.xiaohongshu.com/search_result?keyword={{{s}}}"
+  },
+  {
+    "c": "Dev",
+    "d": "namechecker.vercel.app",
+    "enabled": true,
+    "r": 0,
+    "s": "namecheck",
+    "sc": "Dev",
+    "t": "namecheck",
+    "u": "https://namechecker.vercel.app/?name={{{s}}}"
+  },
+  {
+    "c": "Dev",
+    "d": "publint.dev",
+    "enabled": true,
+    "r": 0,
+    "s": "publint",
+    "sc": "Dev",
+    "t": "publint",
+    "u": "https://publint.dev/{{{s}}}"
+  },
+  {
+    "c": "Dev",
+    "d": "web-check.xyz",
+    "enabled": true,
+    "r": 0,
+    "s": "webcheck",
+    "sc": "Dev",
+    "t": "webcheck",
+    "u": "https://web-check.xyz/check/{{{s}}}"
+  },
+  {
+    "c": "Dev",
+    "d": "unocss.dev",
+    "enabled": true,
+    "r": 0,
+    "s": "unocss",
+    "sc": "Dev",
+    "t": "unocss",
+    "u": "https://unocss.dev/interactive/?s={{{s}}}"
+  },
+  {
+    "c": "Media",
+    "d": "iwara.tv",
+    "enabled": true,
+    "r": 0,
+    "s": "iwara",
+    "sc": "Media",
+    "t": "iwara",
+    "u": "https://www.iwara.tv/search?query={{{s}}}&type=videos"
+  }
+]

@@ -5,17 +5,13 @@ import {
   type Bang,
   type CustomBang,
   parseCustomBangs,
+  mergeBangs,
 } from "./custom-bang";
 import BangSearch from "./components/BangSearch.vue";
 
 const customBangs = ref<CustomBang[]>([]);
 
-const allBangs = computed<Bang[]>(() => [
-  ...customBangs.value
-    .filter((b) => b.enabled !== false)
-    .map(({ enabled: _enabled, ...bang }) => bang),
-  ...bangs,
-]);
+const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
 
 function loadFromStorage(): CustomBang[] {
   const saved = localStorage.getItem("custom-bangs");

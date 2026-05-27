@@ -9,6 +9,7 @@ import {
   type CustomBangSource,
   loadCustomBangsFromUrl,
   parseCustomBangs,
+  mergeBangs,
 } from "./custom-bang";
 import BangModal from "./components/BangModal.vue";
 import BangAddModal from "./components/BangAddModal.vue";
@@ -81,13 +82,7 @@ const sourceCounts = computed(() =>
 );
 const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b) => b.enabled !== false).length);
 const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
-const allBangs = computed<Bang[]>(() => [...getActiveCustomBangs(), ...bangs]);
-
-function getActiveCustomBangs(): Bang[] {
-  return customBangs.value
-    .filter((b) => b.enabled !== false)
-    .map(({ enabled: _enabled, origin: _origin, ...bang }) => bang);
-}
+const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
 
 function saveToStorage() {
   localStorage.setItem(LS_CUSTOM_BANGS, JSON.stringify(customBangs.value, null, 2));
@@ -158,8 +153,8 @@ function dedupeBangs(preferredBangs: CustomBang[], fallbackBangs: CustomBang[] =
   const result: CustomBang[] = [];
 
   for (const bang of [...preferredBangs, ...fallbackBangs]) {
-    if (seen.has(bang.t)) continue;
-    seen.add(bang.t);
+    if (seen.has(bang.u)) continue;
+    seen.add(bang.u);
     result.push(bang);
   }
 

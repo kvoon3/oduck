@@ -183,14 +183,14 @@ onMounted(() => {
           </button>
           <ul v-if="showHints"
             class="pl0 absolute left-0 right-0 top-full mt-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-md overflow-hidden z-10">
-            <li v-for="(bang, i) in hints" :key="bang.t"
+            <li v-for="(bang, i) in hints" :key="bang.u"
               class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer"
-              :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-700' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
+              :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-800:50' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
               @mousedown.prevent="selectHint(bang)" @mouseenter="hintIndex = i">
               <span class="text-neutral-500 dark:text-neutral-400 text-xs w-12 text-right truncate shrink-0">{{ bang.sc
               }}</span>
               <span class="text-neutral-800 dark:text-neutral-200">!{{ bang.t }}</span>
-              <span class="text-neutral-500 dark:text-neutral-500 text-xs truncate ml-auto">{{ bang.s }}</span>
+              <span class="text-neutral-400:75 dark:text-neutral-600 text-xs truncate">{{ bang.u }}</span>
             </li>
           </ul>
         </div>

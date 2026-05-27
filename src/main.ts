@@ -5,6 +5,7 @@ import {
   type Bang,
   type CustomBang,
   parseCustomBangs,
+  mergeBangs,
 } from "./custom-bang";
 
 import 'virtual:uno.css'
@@ -45,14 +46,8 @@ function getSavedCustomBangs(): CustomBang[] | null {
   }
 }
 
-function getActiveCustomBangs(): Bang[] {
-  return customBangs
-    .filter((bang) => bang.enabled !== false)
-    .map(({ enabled: _enabled, ...bang }) => bang);
-}
-
 function syncAllBangs() {
-  allBangs = [...getActiveCustomBangs(), ...bangs];
+  allBangs = mergeBangs(customBangs, bangs);
 }
 
 function downloadJson(filename: string, value: unknown) {

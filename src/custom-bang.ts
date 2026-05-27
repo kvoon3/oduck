@@ -17,6 +17,27 @@ export interface CustomBangSource {
   tags: string[];
 }
 
+export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
+  const seen = new Set<string>();
+  const result: Bang[] = [];
+
+  for (const b of customBangs) {
+    if (b.enabled === false) continue;
+    if (seen.has(b.u)) continue;
+    seen.add(b.u);
+    const { enabled: _enabled, origin: _origin, ...bang } = b;
+    result.push(bang);
+  }
+
+  for (const b of builtinBangs) {
+    if (seen.has(b.u)) continue;
+    seen.add(b.u);
+    result.push(b);
+  }
+
+  return result;
+}
+
 export function parseCustomBangs(value: CustomBang[]): CustomBang[] {
   return value.map((bang) =>
     Object.assign({}, bang, {
