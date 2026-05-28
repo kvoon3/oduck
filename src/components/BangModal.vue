@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { watch, ref, computed } from "vue";
+import { stripBangMarker } from "../bang-query";
 import { type CustomBang, parseCustomBangs } from "../custom-bang";
 import BaseModal from "./BaseModal.vue";
 
@@ -74,7 +75,7 @@ function normalizeDomain(value: string) {
 function handleSubmit() {
   error.value = "";
 
-  const cleanTag = tag.value.trim().replace(/^!/, "").toLowerCase();
+  const cleanTag = stripBangMarker(tag.value);
   const cleanName = name.value.trim();
   const cleanUrl = searchUrl.value.trim();
 

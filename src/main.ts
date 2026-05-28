@@ -1,6 +1,7 @@
 import "./components/oduck-header";
 import "./components/oduck-footer";
 import { bangs } from "./bang";
+import { parseQuery } from "./bang-query";
 import {
   type Bang,
   type CustomBang,
@@ -171,10 +172,9 @@ function getBangredirectUrl() {
     return null;
   }
 
-  const match = query.match(/!(\S+)/i);
-  const bangCandidate = match?.[1]?.toLowerCase();
-  const selectedBang = allBangs.find((b) => b.t === bangCandidate) ?? null;
-  const cleanQuery = query.replace(/!\S+\s*/i, "").trim();
+  const parsed = parseQuery(query);
+  const selectedBang = allBangs.find((b) => b.t === parsed.bang) ?? null;
+  const cleanQuery = parsed.cleanQuery;
 
   if (selectedBang) {
     if (cleanQuery === "")

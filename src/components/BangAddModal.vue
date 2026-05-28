@@ -2,6 +2,7 @@
 import { watch, ref, computed, shallowRef } from "vue";
 import type { CustomBang, CustomBangSource } from "../custom-bang";
 import { parseCustomBangs } from "../custom-bang";
+import { stripBangMarker } from "../bang-query";
 import BaseModal from "./BaseModal.vue";
 
 const props = defineProps<{
@@ -111,7 +112,7 @@ function normalizeDomain(value: string) {
 function handleManualSubmit() {
   manualError.value = "";
 
-  const cleanTag = tag.value.trim().replace(/^!/, "").toLowerCase();
+  const cleanTag = stripBangMarker(tag.value);
   const cleanName = name.value.trim();
   const cleanUrl = searchUrl.value.trim();
 
@@ -177,9 +178,9 @@ function formatFileSize(bytes: number) {
 }
 
 function handleFileUpload() {
-  const name = fileSourceName.value.trim();
-  if (!name || !selectedFile.value) return;
-  emit("importFile", name, selectedFile.value);
+  const importName = fileSourceName.value.trim();
+  if (!importName || !selectedFile.value) return;
+  emit("importFile", importName, selectedFile.value);
 }
 </script>
 

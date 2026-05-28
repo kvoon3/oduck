@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import Fuse from "fuse.js";
 import type { Bang } from "../custom-bang";
+import { useBang } from "../composables/useBang";
 import BaseSelect, { type SelectOption } from "./BaseSelect.vue";
 
 const props = defineProps<{
@@ -11,7 +12,7 @@ const props = defineProps<{
   showUrlResult?: boolean;
 }>();
 
-const testQuery = ref("");
+const input = ref("");
 const inputRef = ref<HTMLInputElement | null>(null);
 const hintIndex = ref(0);
 const hintsHidden = ref(false);
@@ -71,37 +72,15 @@ function resolveFallbackUrl(query: string): string {
   return templateUrl.replace("{{{s}}}", encodeURIComponent(query).replace(/%2F/g, "/"));
 }
 
-const testMatch = computed<{ bang: Bang | null; cleanQuery: string; url: string }>(() => {
-  const q = testQuery.value.trim();
-  if (!q) return { bang: null, cleanQuery: "", url: "" };
-
-  const match = q.match(/!(\S+)/i);
-  const bangToken = match?.[1]?.toLowerCase();
-  const matchedBang = props.allBangs.find((b) => b.t === bangToken) ?? null;
-  const cleanQuery = q.replace(/!\S+\s*/i, "").trim();
-
-  if (!matchedBang) {
-    let fallbackUrl = "";
-    if (cleanQuery) {
-      fallbackUrl = resolveFallbackUrl(cleanQuery);
-    }
-    return { bang: null, cleanQuery, url: fallbackUrl };
-  }
-  if (!cleanQuery) return { bang: matchedBang, cleanQuery: "", url: `https://${matchedBang.d}` };
-
-  const url = matchedBang.u.replace(
-    "{{{s}}}",
-    encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
-  );
-  return { bang: matchedBang, cleanQuery, url };
+const {
+  createQueryWithBang,
+  currentToken,
+  match: testMatch,
+} = useBang({
+  allBangs: () => props.allBangs,
+  query: input,
+  resolveFallbackUrl,
 });
-
-function extractBangToken(query: string): string {
-  const match = query.match(/!(\S*)/i);
-  return match?.[1]?.toLowerCase() ?? "";
-}
-
-const currentToken = computed(() => extractBangToken(testQuery.value));
 
 const hints = computed(() => {
   const token = currentToken.value;
@@ -117,10 +96,7 @@ watch(currentToken, () => {
 const showHints = computed(() => !hintsHidden.value && hints.value.length > 0 && currentToken.value !== "");
 
 function selectHint(bang: Bang) {
-  const q = testQuery.value;
-  const before = q.slice(0, q.indexOf("!"));
-  const after = q.slice(q.indexOf("!") + 1 + extractBangToken(q).length).trimStart();
-  testQuery.value = `${before}!${bang.t} ${after}`;
+  input.value = createQueryWithBang(bang);
   hintsHidden.value = true;
   hintIndex.value = 0;
 }
@@ -141,16 +117,7 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-const decodedUrl = computed(() => {
-  if (!testMatch.value.url) return "";
-  try {
-    return decodeURIComponent(testMatch.value.url);
-  } catch {
-    return testMatch.value.url;
-  }
-});
-
-function doTestRedirect() {
+function goTo() {
   if (!testMatch.value.url) return;
   if (props.mode === "replace") {
     window.location.href = testMatch.value.url;
@@ -169,13 +136,13 @@ onMounted(() => {
 <template>
   <section class="mt-10 text-center">
     <div class="max-w-[560px] mx-auto">
-      <form @submit.prevent="doTestRedirect">
+      <form @submit.prevent="goTo">
         <div class="relative flex-1">
           <div class="absolute left-1 top-1/2 z-1 -translate-y-1/2">
             <BaseSelect v-model="fallbackEngine" :options="fallbackEngineOptions" aria-label="Fallback search engine"
               @change="onFallbackEngineChange" />
           </div>
-          <input ref="inputRef" v-model="testQuery" type="text" class="input w-full pl-12 pr-10"
+          <input ref="inputRef" v-model="input" type="text" class="input w-full pl-12 pr-10"
             placeholder="e.g. !gh vuejs/core" spellcheck="false" autocomplete="off" @keydown="onKeydown" />
           <button class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost" type="submit"
             :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url">
@@ -198,7 +165,5 @@ onMounted(() => {
       <input v-if="showCustomInput" v-model="customEngineUrl" type="text" class="input w-full mt-3"
         placeholder="https://example.com/search?q={{{s}}}" spellcheck="false" @input="onCustomEngineUrlChange" />
     </div>
-    <code v-if="props.showUrlResult && testQuery.trim()"
-      class="mt-4 block text-sm break-all text-neutral-300 dark:text-neutral-700">{{ decodedUrl }}</code>
   </section>
 </template>
