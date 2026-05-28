@@ -1,8 +1,12 @@
+<script lang="ts">
+const modalStack: symbol[] = [];
+</script>
+
 <script setup lang="ts">
-import { useTemplateRef } from "vue";
+import { onUnmounted, useTemplateRef, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
-defineProps<{
+const props = defineProps<{
   visible: boolean;
   title?: string;
   ariaLabelledby?: string;
@@ -14,9 +18,36 @@ const emit = defineEmits<{
 }>();
 
 const panelRef = useTemplateRef<HTMLElement>("panelRef");
+const modalId = Symbol("modal");
+
+function removeFromStack() {
+  const index = modalStack.indexOf(modalId);
+  if (index !== -1) {
+    modalStack.splice(index, 1);
+  }
+}
+
+function isTopModal() {
+  return modalStack.at(-1) === modalId;
+}
+
+watch(
+  () => props.visible,
+  (visible) => {
+    removeFromStack();
+    if (visible) {
+      modalStack.push(modalId);
+    }
+  },
+  { immediate: true },
+);
+
+onUnmounted(removeFromStack);
 
 onClickOutside(panelRef, () => {
-  emit("close");
+  if (isTopModal()) {
+    emit("close");
+  }
 });
 </script>
 
