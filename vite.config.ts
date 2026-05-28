@@ -8,7 +8,13 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag.startsWith("oduck-"),
+        },
+      },
+    }),
     VitePWA({
       registerType: "autoUpdate",
     }),
