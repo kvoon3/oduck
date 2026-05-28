@@ -167,7 +167,7 @@ onClickOutside(rootRef, () => {
   position: absolute;
   top: 100%;
   left: 0;
-  width: 13.75rem;
+  width: 100%;
   height: 0.25rem;
   content: "";
 }
