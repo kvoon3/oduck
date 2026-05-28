@@ -31,7 +31,7 @@ type TabId = (typeof tabs)[number]["id"];
 
 const recommendedSources = [
   { name: 'Kagi', icon: 'i-simple-icons-kagi', url: 'https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json' },
-  { name: 'Oduck', icon: 'i-simple-icons-duckduckgo', url: 'https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json' },
+  { name: 'Oduck', icon: 'i-simple-icons-duckduckgo', url: 'https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/oduck.json' },
 ] as const;
 
 const uninstalledRecommendations = computed(() =>
