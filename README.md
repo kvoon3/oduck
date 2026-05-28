@@ -1,13 +1,18 @@
 # Od*ck
 
-DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables all of DuckDuckGo's bangs to work, but much faster.
+> [!WARNING]
+> This project is not stable yet and is still under active development.
 
+[Unduck](https://unduck.link/) with:
+
+- Custom bangs
+- Subscriptions to external bang sources
+- Search autocomplete
+
+```sh
+https://oduck.kvoone.me?q=%s 
 ```
-https://<your-domain>/?q=%s
-```
 
-## How is it that much faster?
+## Credits
 
-DuckDuckGo does their redirects server side. Their DNS is...not always great. Result is that it often takes ages.
-
-I solved this by doing all of the work client side. Once you've went to the page once, the JS is all cached and will never need to be downloaded again. Your device does the redirects, not me.
+- [Unduck](https://github.com/T3-Content/unduck) - The project Od*ck is based on.
