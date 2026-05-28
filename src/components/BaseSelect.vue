@@ -101,7 +101,12 @@ onClickOutside(rootRef, () => {
 </script>
 
 <template>
-  <div ref="rootRef" class="relative flex-none">
+  <div
+    ref="rootRef"
+    class="select-popup-root relative flex-none"
+    @mouseenter="open = true"
+    @mouseleave="close"
+  >
     <button
       ref="buttonRef"
       type="button"
@@ -118,7 +123,7 @@ onClickOutside(rootRef, () => {
     <Transition name="select-menu">
       <ul
         v-if="open"
-        class="absolute left-0 top-full z-20 mt-2 w-[220px] origin-top-left list-none border rounded-md bg-[#f5f5f5] p-1 shadow-lg shadow-black/10 dark:bg-[#191919] dark:shadow-black/30"
+        class="absolute left-0 top-full z-20 w-[220px] origin-top-left list-none border rounded-md bg-[#f5f5f5] p0 my1 mx0 shadow-lg shadow-black/10 dark:bg-[#191919] dark:shadow-black/30"
         role="listbox"
         :aria-label="ariaLabel"
         @keydown="onListKeydown"
@@ -156,5 +161,14 @@ onClickOutside(rootRef, () => {
 .select-menu-leave-to {
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
+}
+
+.select-popup-root::after {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 13.75rem;
+  height: 0.25rem;
+  content: "";
 }
 </style>

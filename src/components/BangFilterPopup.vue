@@ -23,10 +23,6 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const buttonRef = useTemplateRef<HTMLButtonElement>("buttonRef");
 const open = shallowRef(false);
 
-onClickOutside(rootRef, () => {
-  open.value = false;
-});
-
 function toggleOpen() {
   open.value = !open.value;
 }
@@ -34,6 +30,10 @@ function toggleOpen() {
 function close() {
   open.value = false;
 }
+
+onClickOutside(rootRef, () => {
+  close();
+});
 
 function selectFilter(value: null | boolean) {
   emit("setFilter", value);
@@ -66,7 +66,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="relative inline-flex">
+  <div
+    ref="rootRef"
+    class="filter-popup-root relative inline-flex"
+    @mouseenter="open = true"
+    @mouseleave="close"
+  >
     <button
       ref="buttonRef"
       type="button"
@@ -85,7 +90,7 @@ onUnmounted(() => {
     <Transition name="filter-menu">
       <div
         v-if="open"
-        class="absolute left-0 top-full z-20 mt-2 origin-top-left rounded-md border bg-[#f5f5f5] shadow-lg shadow-black/10 w-max dark:bg-[#191919] dark:shadow-black/30"
+        class="absolute left-0 top-full z-20 mt-1 origin-top-left rounded-md border bg-[#f5f5f5] shadow-lg shadow-black/10 w-max dark:bg-[#191919] dark:shadow-black/30"
       >
         <div class="flex gap-1.5 p-3 pb-1.5">
           <button
@@ -136,5 +141,14 @@ onUnmounted(() => {
 .filter-menu-leave-to {
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
+}
+
+.filter-popup-root::after {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 0.25rem;
+  content: "";
 }
 </style>
