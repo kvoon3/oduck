@@ -16,7 +16,6 @@ import BangAddModal from "./components/BangAddModal.vue";
 import BangSearch from "./components/BangSearch.vue";
 import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
-import RemoveConfirmModal from "./components/RemoveConfirmModal.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
 import CleanConfirmModal from "./components/CleanConfirmModal.vue";
 
@@ -35,6 +34,7 @@ const importError = shallowRef("");
 const syncingSourceIndex = shallowRef<number | null>(null);
 const sourceRemoveIndex = shallowRef<number | null>(null);
 const sourceRemoveVisible = shallowRef(false);
+const selectedBangTags = shallowRef<Set<string>>(new Set());
 
 const cleanConfirmVisible = shallowRef(false);
 
@@ -42,11 +42,6 @@ const filter = ref<null | boolean>(null);
 const originFilter = ref<null | BangOrigin>(null);
 const searchQuery = ref("");
 
-const removeConfirmIndex = ref<number | null>(null);
-const removeConfirmVisible = ref(false);
-const removingBang = computed<CustomBang | null>(() => {
-  return removeConfirmIndex.value !== null ? (customBangs.value[removeConfirmIndex.value] ?? null) : null;
-});
 const removingSource = computed<CustomBangSource | null>(() => {
   return sourceRemoveIndex.value !== null ? (sources.value[sourceRemoveIndex.value] ?? null) : null;
 });
@@ -82,6 +77,10 @@ const sourceCounts = computed(() =>
 );
 const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b) => b.enabled !== false).length);
 const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
+const selectedBangs = computed(() => customBangs.value.filter((bang) => selectedBangTags.value.has(bang.t)));
+const selectedCount = computed(() => selectedBangs.value.length);
+const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
+const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
 const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
 
 function saveToStorage() {
@@ -180,7 +179,23 @@ function handleToggle(index: number, checked: boolean) {
   saveToStorage();
 }
 
-function toggleBang(index: number) {
+function toggleSelectedBang(tag: string) {
+  const next = new Set(selectedBangTags.value);
+  if (next.has(tag)) {
+    next.delete(tag);
+  } else {
+    next.add(tag);
+  }
+  selectedBangTags.value = next;
+}
+
+function handleSelectBang(index: number) {
+  const bang = filteredCustomBangs.value[index];
+  if (!bang) return;
+  toggleSelectedBang(bang.t);
+}
+
+function toggleBangEnabled(index: number) {
   const bang = filteredCustomBangs.value[index];
   if (!bang) return;
   const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
@@ -194,38 +209,16 @@ function handleEdit(index: number) {
   openModal({ ...bang }, customBangs.value.findIndex((b) => b.t === bang.t));
 }
 
-function handleRemove(index: number) {
-  const bang = filteredCustomBangs.value[index];
-  if (!bang) return;
-  const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
-  if (realIdx === -1) return;
-  removeConfirmIndex.value = realIdx;
-  removeConfirmVisible.value = true;
-}
-
-function confirmRemove() {
-  const index = removeConfirmIndex.value;
-  if (index === null) return;
-  const bang = customBangs.value[index];
-  if (!bang) return;
-  customBangs.value.splice(index, 1);
-  if (editingIndex.value === index) {
-    closeModal();
-  } else if (editingIndex.value !== null && editingIndex.value > index) {
-    editingIndex.value -= 1;
-  }
-  saveToStorage();
-  closeRemoveConfirm();
-}
-
-function closeRemoveConfirm() {
-  removeConfirmVisible.value = false;
-  removeConfirmIndex.value = null;
-}
-
 function handleModalSubmit(bang: CustomBang) {
   if (editingIndex.value !== null) {
+    const previousTag = customBangs.value[editingIndex.value]?.t;
     customBangs.value[editingIndex.value] = bang;
+    if (previousTag && previousTag !== bang.t && selectedBangTags.value.has(previousTag)) {
+      const nextSelectedTags = new Set(selectedBangTags.value);
+      nextSelectedTags.delete(previousTag);
+      nextSelectedTags.add(bang.t);
+      selectedBangTags.value = nextSelectedTags;
+    }
   } else if (customBangs.value.find((b) => b.t === bang.t)) {
     return;
   } else {
@@ -261,7 +254,7 @@ function downloadJson(filename: string, value: unknown) {
 }
 
 function handleExport() {
-  downloadJson("custom-bang.json", customBangs.value);
+  downloadJson("custom-bang.json", selectedEnabledBangs.value);
 }
 
 function openCleanConfirm() {
@@ -273,12 +266,24 @@ function closeCleanConfirm() {
 }
 
 function confirmClean() {
-  customBangs.value = [];
-  sources.value = [];
+  const selectedTags = new Set(selectedBangs.value.map((bang) => bang.t));
+  if (selectedTags.size) {
+    customBangs.value = customBangs.value.filter((bang) => !selectedTags.has(bang.t));
+    for (const source of sources.value) {
+      source.tags = source.tags.filter((tag) => !selectedTags.has(tag));
+    }
+    if (editingBang.value && selectedTags.has(editingBang.value.t)) {
+      closeModal();
+    }
+    selectedBangTags.value = new Set();
+  } else {
+    customBangs.value = [];
+    sources.value = [];
+    closeModal();
+  }
   saveToStorage();
   saveSourceUrls();
   closeCleanConfirm();
-  closeModal();
 }
 
 function handleFilterSet(value: null | boolean) {
@@ -352,6 +357,7 @@ function replaceSourceBangs(source: CustomBangSource, nextBangs: CustomBang[]) {
 function removeSourceBangs(source: CustomBangSource) {
   const removedTags = new Set(source.tags);
   customBangs.value = customBangs.value.filter((bang) => !removedTags.has(bang.t));
+  selectedBangTags.value = new Set([...selectedBangTags.value].filter((tag) => !removedTags.has(tag)));
 }
 
 async function syncSourceAtIndex(index: number) {
@@ -450,8 +456,6 @@ function handleEsc(event: KeyboardEvent) {
       closeCleanConfirm();
     } else if (sourceRemoveVisible.value) {
       closeSourceRemoveConfirm();
-    } else if (removeConfirmVisible.value) {
-      closeRemoveConfirm();
     } else if (addModalVisible.value) {
       closeAddModal();
     } else if (modalVisible.value) {
@@ -513,14 +517,16 @@ onUnmounted(() => {
             </div>
 
             <section class="flex gap-2">
-              <button class="btn-primary py2.5" type="button" @click="handleAdd">
-                Add
+              <button class="btn-primary btn-square text-lg" type="button" title="Add" aria-label="Add" @click="handleAdd">
+                <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
               </button>
-              <button class="btn-secondary py2.5" type="button" @click="handleExport">
-                Export
+              <button class="btn-secondary btn-square text-lg" type="button" title="Export" aria-label="Export"
+                :disabled="!selectedEnabledBangs.length" @click="handleExport">
+                <span class="i-ph-export-duotone" aria-hidden="true" />
               </button>
-              <button class="btn-danger py2.5" type="button" :disabled="!customBangs.length" @click="openCleanConfirm">
-                Clean
+              <button class="btn-danger btn-square text-lg" type="button" title="Clean" aria-label="Clean"
+                :disabled="!customBangs.length" @click="openCleanConfirm">
+                <span class="i-ph-broom-duotone" aria-hidden="true" />
               </button>
             </section>
           </section>
@@ -534,8 +540,8 @@ onUnmounted(() => {
               class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
               No bangs match this filter.
             </p>
-            <BangList v-else :custom-bangs="filteredCustomBangs" @toggle="toggleBang" @edit="handleEdit"
-              @remove="handleRemove" />
+            <BangList v-else :custom-bangs="filteredCustomBangs" :selected-bang-tags="selectedBangTags"
+              @select="handleSelectBang" @toggle-enabled="toggleBangEnabled" @edit="handleEdit" />
             <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
               {{ filteredCustomBangs.length }} of {{ totalCount }}
               {{ totalCount === 1 ? 'bang' : 'bangs' }}
@@ -551,14 +557,11 @@ onUnmounted(() => {
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 
-      <RemoveConfirmModal :visible="removeConfirmVisible" :removing-bang="removingBang" @close="closeRemoveConfirm"
-        @confirm="confirmRemove" />
-
       <SourceRemoveConfirmModal :visible="sourceRemoveVisible" :source="removingSource"
         @close="closeSourceRemoveConfirm" @confirm="confirmRemoveSource" />
 
-      <CleanConfirmModal :visible="cleanConfirmVisible" :count="customBangs.length" @close="closeCleanConfirm"
-        @confirm="confirmClean" />
+      <CleanConfirmModal :visible="cleanConfirmVisible" :count="cleanCount" :selected-count="selectedCount"
+        @close="closeCleanConfirm" @confirm="confirmClean" />
     </div>
     <oduck-footer />
   </div>
