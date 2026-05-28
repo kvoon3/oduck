@@ -143,7 +143,7 @@ onMounted(() => {
               @change="onFallbackEngineChange" />
           </div>
           <input ref="inputRef" v-model="input" type="text" class="input w-full pl-12 pr-10"
-            placeholder="e.g. !gh vuejs/core" spellcheck="false" autocomplete="off" @keydown="onKeydown" />
+            placeholder="!gh oduck" spellcheck="false" autocomplete="off" @keydown="onKeydown" />
           <button class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost" type="submit"
             :title="testMatch.url ? 'Open in new tab' : 'Enter a bang query first'" :disabled="!testMatch.url">
             <span class="i-ph-magnifying-glass-duotone text-xl " aria-hidden="true"></span>
