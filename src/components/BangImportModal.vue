@@ -126,7 +126,7 @@ function saveSource(index: number) {
           />
           <button
             v-else
-            class="min-w-0 cursor-text truncate border-none bg-transparent p-0 text-left font-mono text-[12px] text-[#555] outline-none focus-visible:(ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(text-[#bbb] focus-visible:ring-offset-[#101010])"
+            class="min-w-0 cursor-text truncate border-none bg-transparent p-0 text-left font-mono text-[12px] text-[#555] focus-ring dark:text-[#bbb]"
             type="button"
             :disabled="loading || syncingSourceIndex !== null || editingSourceIndex !== null"
             :title="source.url"

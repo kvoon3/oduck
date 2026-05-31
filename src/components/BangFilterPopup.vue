@@ -64,13 +64,13 @@ onUnmounted(() => {
 <template>
   <div
     ref="rootRef"
-    class="filter-popup-root relative inline-flex"
+    class="popup-root relative inline-flex"
     @mouseleave="close"
   >
     <button
       ref="buttonRef"
       type="button"
-      class="btn h-9 w-9 flex items-center justify-center rounded-md bg-transparent p-0 text-neutral-700 transition duration-150 hover:bg-neutral-200/70 focus-visible:(outline-none ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(text-neutral-200 hover:bg-neutral-800)"
+      class="btn btn-icon-transparent focus-ring h-9 w-9"
       :aria-label="`Filter bangs (${filter === null && originFilter === null ? 'all' : 'filtered'})`"
       :aria-expanded="open"
       @click="open = !open"
@@ -82,10 +82,15 @@ onUnmounted(() => {
       />
     </button>
 
-    <Transition name="filter-menu">
+    <Transition
+      enter-active-class="popup-enter-active"
+      leave-active-class="popup-leave-active"
+      enter-from-class="popup-enter-from"
+      leave-to-class="popup-leave-to"
+    >
       <div
         v-if="open"
-        class="absolute left-0 top-full z-20 mt-1 origin-top-left rounded-md border bg-[#f5f5f5] shadow-lg shadow-black/10 w-max dark:bg-[#191919] dark:shadow-black/30"
+        class="popup-surface absolute left-0 top-full z-20 mt-1 origin-top-left rounded-md border w-max"
       >
         <div class="flex gap-1.5 p-3 pb-1.5">
           <button
@@ -125,25 +130,3 @@ onUnmounted(() => {
     </Transition>
   </div>
 </template>
-
-<style scoped>
-.filter-menu-enter-active,
-.filter-menu-leave-active {
-  transition: opacity 120ms ease, transform 120ms ease;
-}
-
-.filter-menu-enter-from,
-.filter-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-4px) scale(0.98);
-}
-
-.filter-popup-root::after {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 0.25rem;
-  content: "";
-}
-</style>

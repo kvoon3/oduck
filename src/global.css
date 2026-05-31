@@ -20,3 +20,89 @@ body {
 [hidden] {
   display: none !important;
 }
+
+/* === Reusable pseudo-class foundations === */
+
+/* Focus ring: shared focus-visible outline-none + ring style */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(115, 115, 115, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  .focus-ring:focus-visible {
+    box-shadow: 0 0 0 2px #101010, 0 0 0 4px rgba(115, 115, 115, 0.45);
+  }
+}
+
+/* Popup surface: shared background + shadow for dropdown/popover panels */
+.popup-surface {
+  background: #f5f5f5;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .popup-surface {
+    background: #191919;
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Transparent icon button: ghost button used in selects & filters */
+.btn-icon-transparent {
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  background: transparent;
+  padding: 0;
+  color: #404040;
+  transition: background-color 150ms;
+}
+
+.btn-icon-transparent:hover {
+  background: rgba(229, 229, 229, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-icon-transparent {
+    color: #e5e5e5;
+  }
+
+  .btn-icon-transparent:hover {
+    background: #262626;
+  }
+}
+
+/* Popup root: positions an invisible bridge after the trigger to prevent
+   mouseleave from firing when the cursor crosses the gap between the
+   trigger and the popup panel. */
+.popup-root::after {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 0.25rem;
+  content: "";
+}
+
+/* Popup transition: shared enter/leave animation for dropdown / popover panels */
+.popup-enter-active,
+.popup-leave-active {
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.popup-enter-from,
+.popup-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}

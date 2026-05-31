@@ -478,8 +478,9 @@ onUnmounted(() => {
 <template>
   <div class="grid grid-rows-[min-content_1fr_min-content] h-dvh">
     <oduck-header />
-    <div class="overflow-auto mx4">
-      <div class="mxa max-w-200">
+    <div class="overflow-auto">
+      <div class="mx4">
+        <div class="mxa max-w-200">
         <div class="text-center">
           <h1>Custom Bangs</h1>
           <p>
@@ -566,6 +567,7 @@ onUnmounted(() => {
 
       <CleanConfirmModal :visible="cleanConfirmVisible" :count="cleanCount" :selected-count="selectedCount"
         @close="closeCleanConfirm" @confirm="confirmClean" />
+    </div>
     </div>
     <oduck-footer />
   </div>

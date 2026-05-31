@@ -137,7 +137,7 @@ onMounted(() => {
   <section class="mt-10 text-center">
     <div class="max-w-[560px] mx-auto">
       <form @submit.prevent="goTo">
-        <div class="relative flex-1">
+        <div class="relative z-10 flex-1">
           <div class="absolute left-1 top-1/2 z-1 -translate-y-1/2">
             <BaseSelect v-model="fallbackEngine" :options="fallbackEngineOptions" aria-label="Fallback search engine"
               @change="onFallbackEngineChange" />

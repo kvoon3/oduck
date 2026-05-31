@@ -97,17 +97,22 @@ onClickOutside(rootRef, () => {
 </script>
 
 <template>
-  <div ref="rootRef" class="select-popup-root relative flex-none" @mouseleave="close">
+  <div ref="rootRef" class="popup-root relative flex-none" @mouseleave="close">
     <button ref="buttonRef" type="button"
-      class="btn h-[38px] w-[38px] flex items-center justify-center rounded-md bg-transparent p-0 text-neutral-700 transition duration-150 hover:bg-neutral-200/70 focus-visible:(outline-none ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(text-neutral-200 hover:bg-neutral-800 focus-visible:ring-offset-[#101010])"
+      class="btn btn-icon-transparent focus-ring h-[38px] w-[38px]"
       :aria-label="ariaLabel" :aria-expanded="open" aria-haspopup="listbox" @click="open = !open"
       @keydown="onButtonKeydown">
       <span v-if="selectedOption?.icon" class="text-[18px]" :class="selectedOption.icon" aria-hidden="true"></span>
     </button>
 
-    <Transition name="select-menu">
+    <Transition
+      enter-active-class="popup-enter-active"
+      leave-active-class="popup-leave-active"
+      enter-from-class="popup-enter-from"
+      leave-to-class="popup-leave-to"
+    >
       <ul v-if="open"
-        class="absolute left-0 top-full z-30 w-[220px] origin-top-left list-none border rounded-md bg-[#f5f5f5] p0 my1 mx0 shadow-lg shadow-black/10 dark:bg-[#191919] dark:shadow-black/30"
+        class="popup-surface absolute left-0 top-full z-30 w-[220px] origin-top-left list-none border rounded-md p0 my1 mx0"
         role="listbox" :aria-label="ariaLabel" @keydown="onListKeydown">
         <li v-for="(option, index) in options" :key="option.value" :ref="(element) => setOptionRef(element, index)"
           class="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-sm outline-none transition duration-150"
@@ -123,27 +128,3 @@ onClickOutside(rootRef, () => {
     </Transition>
   </div>
 </template>
-
-<style scoped>
-.select-menu-enter-active,
-.select-menu-leave-active {
-  transition:
-    opacity 120ms ease,
-    transform 120ms ease;
-}
-
-.select-menu-enter-from,
-.select-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-4px) scale(0.98);
-}
-
-.select-popup-root::after {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 0.25rem;
-  content: "";
-}
-</style>

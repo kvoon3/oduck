@@ -31,12 +31,14 @@ onMounted(() => {
 <template>
   <div class="grid grid-rows-[min-content_1fr_min-content] h-dvh">
     <oduck-header />
-    <div class="overflow-auto mx4">
-      <div class="mxa max-w-[46rem] pt-[12vh] pb-22 px-5">
+    <div class="overflow-auto">
+      <div class="mx4">
+        <div class="mxa max-w-[46rem] pt-[12vh] pb-22 px-5">
         <h1 class="text-center">Od*ck</h1>
 
         <BangSearch :all-bangs="allBangs" mode="replace" autofocus class="mt-10" />
       </div>
+    </div>
     </div>
 
     <oduck-footer />
