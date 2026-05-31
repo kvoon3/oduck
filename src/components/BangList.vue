@@ -39,9 +39,8 @@ watch(items, () => {
             ? 'bg-neutral-200 text-neutral-950 ring-1 ring-neutral-300 hover:bg-neutral-200 dark:(bg-neutral-700 text-neutral-50 ring-neutral-600 hover:bg-neutral-700)'
             : '',
         ]" role="option" tabindex="0" :aria-selected="selectedBangTags.has(item.data.t)"
-        :title="selectedBangTags.has(item.data.t) ? 'Selected' : 'Select'"
-        @click="$emit('select', item.index)" @keydown.enter.prevent="$emit('select', item.index)"
-        @keydown.space.prevent="$emit('select', item.index)">
+        :title="selectedBangTags.has(item.data.t) ? 'Selected' : 'Select'" @click="$emit('select', item.index)"
+        @keydown.enter.prevent="$emit('select', item.index)" @keydown.space.prevent="$emit('select', item.index)">
         <div class="flex items-baseline gap-2.5 min-w-0">
           <strong class="min-w-0 truncate">{{ item.data.s }}</strong>
           <span class="flex-none text-[13px]" :class="item.data.enabled === false
@@ -50,11 +49,20 @@ watch(items, () => {
             ">!{{ item.data.t }}</span>
         </div>
         <div class="flex gap-1.5">
-          <button class="btn-secondary btn-sm bg-transparent text-neutral-400 hover:bg-neutral-200/50 hover:text-neutral-950 dark:(text-neutral-500 hover:text-neutral-50 hover:bg-neutral-700/50)" type="button" @click.stop="$emit('toggleEnabled', item.index)" :aria-label="item.data.enabled === false ? 'Enable' : 'Disable'">
-            <span class="hidden lt-sm:inline-block lt-sm:text-base" :class="item.data.enabled === false ? 'i-ph-toggle-left-bold' : 'i-ph-toggle-right-bold'" aria-hidden="true" />
-            <span class="lt-sm:hidden">{{ item.data.enabled === false ? 'Enable' : 'Disable' }}</span>
+          <button class="btn-secondary btn-sm bg-transparent"
+            :class="item.data.enabled === false
+              ? 'text-red-400 hover:bg-red-100 hover:text-red-600 dark:(text-red-400 hover:bg-red-900/30 hover:text-red-300)'
+              : 'text-green-600 hover:bg-green-100 hover:text-green-700 dark:(text-green-400 hover:bg-green-900/30 hover:text-green-300)'" type="button"
+            @click.stop="$emit('toggleEnabled', item.index)"
+            :aria-label="item.data.enabled === false ? 'Enable' : 'Disable'">
+            <span class="hidden lt-sm:inline-block lt-sm:text-base"
+              :class="item.data.enabled === false ? 'i-ph-toggle-left-duotone' : 'i-ph-toggle-right-duotone'"
+              aria-hidden="true" />
+            <span class="lt-sm:hidden">{{ item.data.enabled === false ? 'Disabled' : 'Enabled' }}</span>
           </button>
-          <button class="btn-secondary btn-sm bg-transparent text-neutral-400 hover:bg-neutral-200/50 hover:text-neutral-950 dark:(text-neutral-500 hover:text-neutral-50 hover:bg-neutral-700/50)" type="button" @click.stop="$emit('edit', item.index)" aria-label="Edit">
+          <button
+            class="btn-secondary btn-sm bg-transparent text-neutral-400 hover:bg-neutral-200/50 hover:text-neutral-950 dark:(text-neutral-500 hover:text-neutral-50 hover:bg-neutral-700/50)"
+            type="button" @click.stop="$emit('edit', item.index)" aria-label="Edit">
             <span class="hidden lt-sm:inline-block i-ph-pencil-simple-bold lt-sm:text-base" aria-hidden="true" />
             <span class="lt-sm:hidden">Edit</span>
           </button>

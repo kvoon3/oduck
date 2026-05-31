@@ -507,26 +507,30 @@ onUnmounted(() => {
                   :sources="sources" :source-counts="sourceCounts" @set-filter="handleFilterSet"
                   @set-origin-filter="handleOriginFilterSet" />
               </div>
-              <input v-model="searchQuery" class="input pl-11 pr-10" type="text" placeholder="Search your bangs..." />
-              <button type="button"
-                class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-sm btn-ghost rounded text-xs text-neutral-500 transition duration-150"
-                :disabled="!customBangs.length"
-                @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
-                {{ filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all' }}
-              </button>
+              <input v-model="searchQuery" class="input pl-11" type="text" placeholder="Search your bangs..." />
+
             </div>
 
             <section class="flex gap-2">
-              <button class="btn-primary btn-square text-lg" type="button" title="Add" aria-label="Add" @click="handleAdd">
+              <button class="btn-primary btn-square text-xl" type="button" title="Add" aria-label="Add" @click="handleAdd">
                 <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
               </button>
-              <button class="btn-secondary btn-square text-lg" type="button" title="Export" aria-label="Export"
+              <button class="btn-secondary btn-square text-xl" type="button" title="Export" aria-label="Export"
                 :disabled="!selectedEnabledBangs.length" @click="handleExport">
                 <span class="i-ph-export-duotone" aria-hidden="true" />
               </button>
-              <button class="btn-danger btn-square text-lg" type="button" title="Clean" aria-label="Clean"
+              <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
                 :disabled="!customBangs.length" @click="openCleanConfirm">
                 <span class="i-ph-broom-duotone" aria-hidden="true" />
+              </button>
+              <button class="btn-secondary btn-square text-xl" type="button"
+                :title="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
+                :aria-label="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
+                :disabled="!customBangs.length"
+                @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
+                <span
+                  :class="filteredEnabledCount === filteredTotalCount ? 'i-ph-toggle-right-duotone' : 'i-ph-toggle-left-duotone'"
+                  aria-hidden="true" />
               </button>
             </section>
           </section>

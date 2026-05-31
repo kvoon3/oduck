@@ -23,10 +23,6 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const buttonRef = useTemplateRef<HTMLButtonElement>("buttonRef");
 const open = shallowRef(false);
 
-function toggleOpen() {
-  open.value = !open.value;
-}
-
 function close() {
   open.value = false;
 }
@@ -69,7 +65,6 @@ onUnmounted(() => {
   <div
     ref="rootRef"
     class="filter-popup-root relative inline-flex"
-    @mouseenter="open = true"
     @mouseleave="close"
   >
     <button
@@ -78,7 +73,7 @@ onUnmounted(() => {
       class="btn h-9 w-9 flex items-center justify-center rounded-md bg-transparent p-0 text-neutral-700 transition duration-150 hover:bg-neutral-200/70 focus-visible:(outline-none ring-2 ring-neutral-500/45 ring-offset-2 ring-offset-white) dark:(text-neutral-200 hover:bg-neutral-800)"
       :aria-label="`Filter bangs (${filter === null && originFilter === null ? 'all' : 'filtered'})`"
       :aria-expanded="open"
-      @click="toggleOpen"
+      @click="open = !open"
     >
       <span
         class="text-[18px]"
