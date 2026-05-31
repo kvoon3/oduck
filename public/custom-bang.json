@@ -1,22 +1,32 @@
 [
   {
-    "c": "Custom",
+    "c": "AI",
     "d": "chatgpt.com",
     "enabled": true,
     "r": 0,
     "s": "ChatGPT",
-    "sc": "Custom",
+    "sc": "AI",
     "t": "c",
     "u": "https://chatgpt.com?q={{{s}}}"
   },
   {
-    "c": "Custom",
+    "c": "Online Services",
     "d": "www.xiaohongshu.com",
     "enabled": true,
     "r": 0,
     "s": "Xiaohongshu",
-    "sc": "Custom",
+    "sc": "Social",
     "t": "xiaohongshu",
     "u": "https://www.xiaohongshu.com/search_result?keyword={{{s}}}"
+  },
+  {
+    "c": "Online Services",
+    "d": "www.rednote.com",
+    "enabled": true,
+    "r": 0,
+    "s": "RedNote",
+    "sc": "Social",
+    "t": "rednote",
+    "u": "https://www.rednote.com/search_result?keyword={{{s}}}"
   }
 ]
