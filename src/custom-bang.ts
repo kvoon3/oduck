@@ -9,8 +9,8 @@ export type CustomBang = Bang & {
 };
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL = import.meta.env.DEV
-  ? "/custom-bang.json"
-  : "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/custom-bang.json";
+  ? "/oduck.json"
+  : "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/oduck.json";
 
 export interface CustomBangSource {
   name: string;
