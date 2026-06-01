@@ -530,7 +530,7 @@ onUnmounted(() => {
 
         <BangSearch :all-bangs="allBangs" mode="new-tab" />
 
-        <div class="flex items-center gap-3 my-8">
+        <div class="flex items-center gap-3 my-8 peer/hide">
           <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
           <a href="/search" title="Back to search"
             class="text-neutral-400 hover:text-neutral-600 dark:(text-neutral-500 hover:text-neutral-300) transition">
@@ -539,7 +539,7 @@ onUnmounted(() => {
           <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
         </div>
 
-        <section>
+        <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
           <section class="flex justify-between items-center gap-2 mb4">
             <div class="relative my-2 flex-1">
               <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
