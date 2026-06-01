@@ -34,10 +34,11 @@ export interface CustomBangSource {
   tags: string[];
 }
 
+import { toArray } from '@antfu/utils';
+
 function normalizeA(a: string | string[] | undefined): string[] | undefined {
-  if (a == null) return undefined;
-  if (typeof a === 'string') return [a.toLowerCase()];
-  return a.map((v) => v.toLowerCase());
+  const arr = toArray(a).filter(Boolean);
+  return arr.length > 0 ? arr.map((v) => v.toLowerCase()) : undefined;
 }
 
 function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
