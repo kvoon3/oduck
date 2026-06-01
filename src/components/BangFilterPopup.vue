@@ -65,7 +65,6 @@ onUnmounted(() => {
   <div
     ref="rootRef"
     class="popup-root relative inline-flex"
-    @mouseleave="close"
   >
     <button
       ref="buttonRef"

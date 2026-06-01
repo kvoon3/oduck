@@ -97,7 +97,7 @@ onClickOutside(rootRef, () => {
 </script>
 
 <template>
-  <div ref="rootRef" class="popup-root relative flex-none" @mouseleave="close">
+  <div ref="rootRef" class="popup-root relative flex-none">
     <button ref="buttonRef" type="button"
       class="btn btn-icon-transparent focus-ring h-[38px] w-[38px]"
       :aria-label="ariaLabel" :aria-expanded="open" aria-haspopup="listbox" @click="open = !open"
