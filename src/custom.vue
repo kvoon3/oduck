@@ -18,6 +18,7 @@ import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
 import CleanConfirmModal from "./components/CleanConfirmModal.vue";
+import ExportConfirmModal from "./components/ExportConfirmModal.vue";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 const LS_CUSTOM_BANG_SOURCES = "custom-bang-sources";
@@ -37,6 +38,7 @@ const sourceRemoveVisible = shallowRef(false);
 const selectedBangTags = shallowRef<Set<string>>(new Set());
 
 const cleanConfirmVisible = shallowRef(false);
+const exportConfirmVisible = shallowRef(false);
 
 const filter = ref<null | boolean>(null);
 const originFilter = ref<null | BangOrigin>(null);
@@ -79,6 +81,10 @@ const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b)
 const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
 const selectedBangs = computed(() => customBangs.value.filter((bang) => selectedBangTags.value.has(bang.t)));
 const selectedCount = computed(() => selectedBangs.value.length);
+const allFilteredSelected = computed(() =>
+  filteredCustomBangs.value.length > 0 &&
+  filteredCustomBangs.value.every((b) => selectedBangTags.value.has(b.t)),
+);
 const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
 const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
 const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
@@ -200,6 +206,24 @@ function handleSelectBang(index: number) {
   toggleSelectedBang(bang.t);
 }
 
+function handleToggleSelectAll() {
+  if (allFilteredSelected.value) {
+    // Deselect all filtered bangs
+    const next = new Set(selectedBangTags.value);
+    for (const bang of filteredCustomBangs.value) {
+      next.delete(bang.t);
+    }
+    selectedBangTags.value = next;
+  } else {
+    // Select all filtered bangs
+    const next = new Set(selectedBangTags.value);
+    for (const bang of filteredCustomBangs.value) {
+      next.add(bang.t);
+    }
+    selectedBangTags.value = next;
+  }
+}
+
 function toggleBangEnabled(index: number) {
   const bang = filteredCustomBangs.value[index];
   if (!bang) return;
@@ -258,8 +282,17 @@ function downloadJson(filename: string, value: unknown) {
   URL.revokeObjectURL(url);
 }
 
-function handleExport() {
+function openExportConfirm() {
+  exportConfirmVisible.value = true;
+}
+
+function closeExportConfirm() {
+  exportConfirmVisible.value = false;
+}
+
+function confirmExport() {
   downloadJson("custom-bang.json", selectedEnabledBangs.value);
+  closeExportConfirm();
 }
 
 function openCleanConfirm() {
@@ -461,6 +494,8 @@ function handleEsc(event: KeyboardEvent) {
       closeCleanConfirm();
     } else if (sourceRemoveVisible.value) {
       closeSourceRemoveConfirm();
+    } else if (exportConfirmVisible.value) {
+      closeExportConfirm();
     } else if (addModalVisible.value) {
       closeAddModal();
     } else if (modalVisible.value) {
@@ -522,12 +557,17 @@ onUnmounted(() => {
                 <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
               </button>
               <button class="btn-secondary btn-square text-xl" type="button" title="Export" aria-label="Export"
-                :disabled="!selectedEnabledBangs.length" @click="handleExport">
+                :disabled="!selectedEnabledBangs.length" @click="openExportConfirm">
                 <span class="i-ph-export-duotone" aria-hidden="true" />
               </button>
-              <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
-                :disabled="!customBangs.length" @click="openCleanConfirm">
-                <span class="i-ph-broom-duotone" aria-hidden="true" />
+              <button class="btn-secondary btn-square text-xl" type="button"
+                :title="allFilteredSelected ? 'Deselect all' : 'Select all'"
+                :aria-label="allFilteredSelected ? 'Deselect all' : 'Select all'"
+                :disabled="!filteredCustomBangs.length"
+                @click="handleToggleSelectAll">
+                <span
+                  :class="allFilteredSelected ? 'i-ph-check-square-duotone' : 'i-ph-check-square-offset-duotone'"
+                  aria-hidden="true" />
               </button>
               <button class="btn-secondary btn-square text-xl" type="button"
                 :title="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
@@ -537,6 +577,10 @@ onUnmounted(() => {
                 <span
                   :class="filteredEnabledCount === filteredTotalCount ? 'i-ph-toggle-right-duotone' : 'i-ph-toggle-left-duotone'"
                   aria-hidden="true" />
+              </button>
+              <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
+                :disabled="!customBangs.length" @click="openCleanConfirm">
+                <span class="i-ph-broom-duotone" aria-hidden="true" />
               </button>
             </section>
           </section>
@@ -571,7 +615,11 @@ onUnmounted(() => {
         @close="closeSourceRemoveConfirm" @confirm="confirmRemoveSource" />
 
       <CleanConfirmModal :visible="cleanConfirmVisible" :count="cleanCount" :selected-count="selectedCount"
+        :bangs="selectedCount ? selectedBangs : customBangs"
         @close="closeCleanConfirm" @confirm="confirmClean" />
+
+      <ExportConfirmModal :visible="exportConfirmVisible" :bangs="selectedEnabledBangs"
+        @close="closeExportConfirm" @confirm="confirmExport" />
     </div>
     </div>
     <oduck-footer />

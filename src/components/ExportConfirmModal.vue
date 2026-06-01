@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import type { CustomBang } from "../custom-bang";
 import BaseModal from "./BaseModal.vue";
 
 const props = defineProps<{
   visible: boolean;
-  count: number;
-  selectedCount: number;
   bangs: CustomBang[];
 }>();
 
@@ -37,11 +35,11 @@ watch(
   { immediate: true },
 );
 
-function previewLines() {
+const previewLines = computed(() => {
   if (showAll.value) return fullJson.value;
   const lines = fullJson.value.split("\n");
   return lines.slice(0, PREVIEW_LINES).join("\n");
-}
+});
 
 function toggleShowAll() {
   showAll.value = !showAll.value;
@@ -49,22 +47,15 @@ function toggleShowAll() {
 </script>
 
 <template>
-  <BaseModal :visible="visible" :title="selectedCount ? 'Delete Selected Bangs' : 'Clean All Bangs'" @close="$emit('close')">
+  <BaseModal :visible="visible" title="Export Bangs" @close="$emit('close')">
     <div class="px-7 pb-4 lt-sm:px-5 lt-sm:pb-2">
       <p class="text-sm text-[#666] dark:text-[#aaa]">
-        <template v-if="selectedCount">
-          This will permanently remove <strong>{{ count }}</strong> selected
-          {{ count === 1 ? "bang" : "bangs" }}. This action cannot be undone.
-        </template>
-        <template v-else>
-          This will permanently remove all <strong>{{ count }}</strong> custom
-          {{ count === 1 ? "bang" : "bangs" }} and all source subscriptions.
-          This action cannot be undone.
-        </template>
+        Exporting <strong>{{ bangs.length }}</strong>
+        {{ bangs.length === 1 ? "bang" : "bangs" }}.
       </p>
       <pre
         class="mt-4 p-4 border rounded-md bg-[#fafafa] text-xs text-[#333] overflow-auto max-h-50 dark:(bg-[#171717] text-[#d4d4d4])"
-      >{{ previewLines() }}</pre>
+      >{{ previewLines }}</pre>
       <p class="mt-2 text-xs text-[#888] dark:text-[#666]">
         {{ lineCount }} lines of JSON
         <template v-if="lineCount > PREVIEW_LINES">
@@ -86,8 +77,8 @@ function toggleShowAll() {
           <button class="btn-secondary" type="button" @click="$emit('close')">
             Cancel
           </button>
-          <button class="btn-danger" type="button" @click="$emit('confirm')">
-            {{ selectedCount ? "Delete Selected" : "Clean All" }}
+          <button class="btn-primary" type="button" @click="$emit('confirm')">
+            Download
           </button>
         </div>
       </div>
