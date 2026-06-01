@@ -102,8 +102,8 @@ onUnmounted(() => {
             type="button"
             class="btn flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition duration-150"
             :class="filter === opt.value
-              ? 'bg-neutral-300 text-neutral-950 dark:bg-neutral-600 dark:text-neutral-50'
-              : 'text-neutral-600 hover:bg-neutral-200/70 dark:text-neutral-400 dark:hover:bg-neutral-800'"
+              ? 'bg-neutral-300 text-neutral-950 dark:bg-neutral-700 dark:text-neutral-50'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'"
             @click="selectFilter(opt.value)"
           >
             <span>{{ opt.label }}</span>
@@ -117,8 +117,8 @@ onUnmounted(() => {
             type="button"
             class="btn rounded-md px-3 py-1.5 text-sm font-medium transition duration-150"
             :class="originFilter === opt.value
-              ? 'bg-neutral-300 text-neutral-950 dark:bg-neutral-600 dark:text-neutral-50'
-              : 'text-neutral-600 hover:bg-neutral-200/70 dark:text-neutral-400 dark:hover:bg-neutral-800'"
+              ? 'bg-neutral-300 text-neutral-950 dark:bg-neutral-700 dark:text-neutral-50'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'"
             @click="selectOriginFilter(originFilter === opt.value ? null : opt.value)"
           >
             <span>{{ opt.label }}</span>
