@@ -6,8 +6,8 @@ export type BangOrigin = string;
 export type CustomBang = Bang & {
   enabled?: boolean;
   origin?: BangOrigin;
-  /** Alias: references another bang's t field. When set, all other fields are inherited from the target. */
-  a?: string;
+  /** Alias target(s). Single string or ordered fallback list. Fields are inherited from the first target that exists. */
+  a?: string | string[];
 };
 
 /** Minimal JSON bang input (used during import/parse). All Bang fields are optional when a is set. */
@@ -21,7 +21,7 @@ export interface CustomBangInput {
   u?: string;
   enabled?: boolean;
   origin?: BangOrigin;
-  a?: string;
+  a?: string | string[];
 };
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL = import.meta.env.DEV
@@ -32,6 +32,12 @@ export interface CustomBangSource {
   name: string;
   url: string;
   tags: string[];
+}
+
+function normalizeA(a: string | string[] | undefined): string[] | undefined {
+  if (a == null) return undefined;
+  if (typeof a === 'string') return [a.toLowerCase()];
+  return a.map((v) => v.toLowerCase());
 }
 
 function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
@@ -52,21 +58,27 @@ function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[]
     if (visited.has(bang.t)) return null;
     visited.add(bang.t);
 
-    if (!bang.a) {
+    const aliases = normalizeA(bang.a);
+    if (!aliases || aliases.length === 0) {
       const { enabled: _enabled, origin: _origin, a: _a, ...rest } = bang;
       return rest as Bang;
     }
 
-    const targetCustom = customByTrigger.get(bang.a);
-    if (targetCustom) {
-      const resolved = resolveSingle(targetCustom, visited);
-      if (!resolved) return null;
-      return { ...resolved, t: bang.t };
-    }
+    // Try each alias in order, use the first that resolves
+    for (const alias of aliases) {
+      if (visited.has(alias)) continue;
 
-    const targetBuiltin = builtinByTrigger.get(bang.a);
-    if (targetBuiltin) {
-      return { ...targetBuiltin, t: bang.t };
+      const targetCustom = customByTrigger.get(alias);
+      if (targetCustom) {
+        const resolvedTarget = resolveSingle(targetCustom, visited);
+        if (resolvedTarget) return { ...resolvedTarget, t: bang.t };
+        continue;
+      }
+
+      const targetBuiltin = builtinByTrigger.get(alias);
+      if (targetBuiltin) {
+        return { ...targetBuiltin, t: bang.t };
+      }
     }
 
     return null;
@@ -103,7 +115,7 @@ export function parseCustomBangs(value: CustomBangInput[]): CustomBang[] {
     sc: bang.sc ?? "Custom",
     t: bang.t.toLowerCase(),
     u: bang.u ? bang.u.replace("%s", "{{{s}}}") : "",
-    a: bang.a?.toLowerCase(),
+    a: bang.a != null ? normalizeA(bang.a) : undefined,
     enabled: bang.enabled,
     origin: bang.origin,
   }));

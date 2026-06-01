@@ -32,11 +32,18 @@ const builtinBangs: Bang[] = [
 ];
 
 describe("parseCustomBangs", () => {
-  it("lowercases alias field", () => {
+  it("lowercases single alias", () => {
     const input: CustomBang[] = [
       { c: "X", d: "x.com", r: 0, s: "X", sc: "X", t: "c", u: "https://x.com?q={{{s}}}", a: "ChatGPT" },
     ];
-    expect(parseCustomBangs(input)[0].a).toBe("chatgpt");
+    expect(parseCustomBangs(input)[0].a).toEqual(["chatgpt"]);
+  });
+
+  it("lowercases alias array", () => {
+    const input: CustomBang[] = [
+      { c: "X", d: "x.com", r: 0, s: "X", sc: "X", t: "c", u: "", a: ["ChatGPT", "GH"] },
+    ];
+    expect(parseCustomBangs(input)[0].a).toEqual(["chatgpt", "gh"]);
   });
 
   it("leaves u empty for alias-only bangs", () => {
@@ -60,6 +67,31 @@ describe("mergeBangs with aliases", () => {
     expect(cAlias!.u).toBe("https://chatgpt.com/?q={{{s}}}");
     expect(cAlias!.d).toBe("chatgpt.com");
     expect(cAlias!.s).toBe("ChatGPT");
+  });
+
+  it("resolves alias array with fallback order", () => {
+    const custom: CustomBang[] = [
+      { c: "AI", d: "chatgpt.com", r: 0, s: "ChatGPT", sc: "AI", t: "chatgpt", u: "https://chatgpt.com/?q={{{s}}}", enabled: true },
+      { c: "AI", d: "emptydomain.com", r: 0, s: "C", sc: "AI", t: "c", u: "", enabled: true, a: ["nonexistent", "chatgpt"] },
+    ];
+
+    const merged = mergeBangs(custom, builtinBangs);
+    const cAlias = merged.find((b) => b.t === "c");
+    expect(cAlias).toBeDefined();
+    expect(cAlias!.u).toBe("https://chatgpt.com/?q={{{s}}}");
+  });
+
+  it("resolves alias array with all custom fallbacks", () => {
+    const custom: CustomBang[] = [
+      { c: "X", d: "b.com", r: 0, s: "B", sc: "X", t: "b", u: "https://b.com?q={{{s}}}", enabled: true },
+      { c: "X", d: "a.com", r: 0, s: "A", sc: "X", t: "a", u: "https://a.com?q={{{s}}}", enabled: true },
+      { c: "X", d: "emptydomain.com", r: 0, s: "X", sc: "X", t: "x", u: "", enabled: true, a: ["nonexistent", "b", "a"] },
+    ];
+
+    const merged = mergeBangs(custom, builtinBangs);
+    const xAlias = merged.find((b) => b.t === "x");
+    expect(xAlias).toBeDefined();
+    expect(xAlias!.u).toBe("https://b.com?q={{{s}}}");
   });
 
   it("resolves alias to a built-in bang", () => {

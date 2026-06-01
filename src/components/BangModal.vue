@@ -38,8 +38,8 @@ function open() {
     name.value = props.editingBang.s;
     domain.value = props.editingBang.d;
     searchUrl.value = props.editingBang.u;
-    aliasTarget.value = props.editingBang.a ?? "";
-    isAlias.value = !!props.editingBang.a;
+    aliasTarget.value = typeof props.editingBang.a === 'string' ? props.editingBang.a : (Array.isArray(props.editingBang.a) ? props.editingBang.a.join(', ') : '');
+    isAlias.value = props.editingBang.a != null;
   } else {
     reset();
   }
@@ -84,9 +84,12 @@ function handleSubmit() {
   const cleanTag = stripBangMarker(tag.value);
   const cleanName = name.value.trim();
   const cleanUrl = searchUrl.value.trim();
-  const cleanAliasTarget = stripBangMarker(aliasTarget.value).toLowerCase();
+  const cleanAliasTarget = aliasTarget.value
+    .split(',')
+    .map((s) => stripBangMarker(s.trim()).toLowerCase())
+    .filter(Boolean);
 
-  if (isAlias.value && !cleanAliasTarget) {
+  if (isAlias.value && cleanAliasTarget.length === 0) {
     error.value = "Alias target is required.";
     return;
   }
@@ -159,7 +162,7 @@ function handleSubmit() {
           <input
             v-model="aliasTarget"
             class="input"
-            placeholder="e.g. chatgpt"
+            placeholder="e.g. chatgpt, gpt"
             spellcheck="false"
             autocomplete="off"
             required

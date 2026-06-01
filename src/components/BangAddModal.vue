@@ -119,9 +119,12 @@ function handleManualSubmit() {
   const cleanTag = stripBangMarker(tag.value);
   const cleanName = name.value.trim();
   const cleanUrl = searchUrl.value.trim();
-  const cleanAliasTarget = stripBangMarker(aliasTarget.value).toLowerCase();
+  const cleanAliasTarget = aliasTarget.value
+    .split(',')
+    .map((s) => stripBangMarker(s.trim()).toLowerCase())
+    .filter(Boolean);
 
-  if (isAlias.value && !cleanAliasTarget) {
+  if (isAlias.value && cleanAliasTarget.length === 0) {
     manualError.value = "Alias target is required.";
     return;
   }
@@ -258,7 +261,7 @@ function handleFileUpload() {
           <input
             v-model="aliasTarget"
             class="input"
-            placeholder="e.g. chatgpt"
+            placeholder="e.g. chatgpt, gpt"
             spellcheck="false"
             autocomplete="off"
             required
