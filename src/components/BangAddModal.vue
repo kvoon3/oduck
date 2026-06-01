@@ -4,6 +4,7 @@ import type { CustomBang, CustomBangSource } from "../custom-bang";
 import { parseCustomBangs } from "../custom-bang";
 import { stripBangMarker } from "../bang-query";
 import BaseModal from "./BaseModal.vue";
+import FoldableSection from "./FoldableSection.vue";
 
 const props = defineProps<{
   visible: boolean;
@@ -23,8 +24,8 @@ const emit = defineEmits<{
 }>();
 
 const tabs = [
+  { id: "url" as const, label: "Preset" },
   { id: "manual" as const, label: "Manual" },
-  { id: "url" as const, label: "URL" },
   { id: "file" as const, label: "File" },
 ] as const;
 
@@ -45,7 +46,7 @@ function findRecommended(name: string) {
   return recommendedSources.find(rec => rec.name === name);
 }
 
-const activeTab = ref<TabId>("manual");
+const activeTab = ref<TabId>("url");
 
 // Manual form
 const tag = ref("");
@@ -393,42 +394,43 @@ function handleFileUpload() {
 
     <!-- URL tab -->
     <div v-else-if="activeTab === 'url'" key="url" class="grid gap-6 mt-6">
-      <label class="grid gap-1.5 w-full">
-        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-          Source name
-        </span>
-        <input
-          v-model="sourceName"
-          class="input"
-          placeholder="e.g. Kagi"
-          spellcheck="false"
-          autocomplete="off"
-          :disabled="loading"
-        />
-      </label>
-      <label class="grid gap-1.5 w-full">
-        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-          JSON source URL
-        </span>
-        <div class="flex gap-2">
-          <input
-            v-model="sourceUrl"
-            class="input font-mono flex-1"
-            placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
-            spellcheck="false"
-            autocomplete="off"
-            :disabled="loading"
-          />
-          <button class="btn-primary py-2.5 shrink-0" type="button" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()" @click="handleUrlSubmit">
-            {{ loading ? "Syncing..." : "Add Source" }}
-          </button>
+      <FoldableSection title="Add from URL">
+        <div class="grid gap-4">
+          <label class="grid gap-1.5 w-full">
+            <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+              Source name
+            </span>
+            <input
+              v-model="sourceName"
+              class="input"
+              placeholder="e.g. Kagi"
+              spellcheck="false"
+              autocomplete="off"
+              :disabled="loading"
+            />
+          </label>
+          <label class="grid gap-1.5 w-full">
+            <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+              JSON source URL
+            </span>
+            <div class="flex gap-2">
+              <input
+                v-model="sourceUrl"
+                class="input font-mono flex-1"
+                placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
+                spellcheck="false"
+                autocomplete="off"
+                :disabled="loading"
+              />
+              <button class="btn-primary py-2.5 shrink-0" type="button" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()" @click="handleUrlSubmit">
+                {{ loading ? "Syncing..." : "Add Source" }}
+              </button>
+            </div>
+          </label>
         </div>
-      </label>
+      </FoldableSection>
 
-      <div v-if="uninstalledRecommendations.length > 0">
-        <p class="text-xs font-medium text-[#888] dark:text-[#666] mb-3">
-          Recommended
-        </p>
+      <FoldableSection v-if="uninstalledRecommendations.length > 0" title="Recommended" open>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div
             v-for="rec in uninstalledRecommendations"
@@ -454,12 +456,9 @@ function handleFileUpload() {
             </button>
           </div>
         </div>
-      </div>
+      </FoldableSection>
 
-      <div v-if="sources.length > 0">
-        <p class="text-xs font-medium text-[#888] dark:text-[#666] mb-3">
-          Installed
-        </p>
+      <FoldableSection v-if="sources.length > 0" title="Installed">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div
             v-for="(source, index) in sources"
@@ -496,7 +495,7 @@ function handleFileUpload() {
             </button>
           </div>
         </div>
-      </div>
+      </FoldableSection>
     </div>
       </Transition>
     </div>
