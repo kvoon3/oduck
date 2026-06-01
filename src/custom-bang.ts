@@ -6,6 +6,22 @@ export type BangOrigin = string;
 export type CustomBang = Bang & {
   enabled?: boolean;
   origin?: BangOrigin;
+  /** Alias: references another bang's t field. When set, all other fields are inherited from the target. */
+  a?: string;
+};
+
+/** Minimal JSON bang input (used during import/parse). All Bang fields are optional when a is set. */
+export interface CustomBangInput {
+  t: string;
+  c?: string;
+  d?: string;
+  r?: number;
+  s?: string;
+  sc?: string;
+  u?: string;
+  enabled?: boolean;
+  origin?: BangOrigin;
+  a?: string;
 };
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL = import.meta.env.DEV
@@ -18,34 +34,79 @@ export interface CustomBangSource {
   tags: string[];
 }
 
-export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
-  const seen = new Set<string>();
-  const result: Bang[] = [];
+function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
+  const customByTrigger = new Map<string, CustomBang>();
+  for (const b of customBangs) {
+    customByTrigger.set(b.t, b);
+  }
+
+  const builtinByTrigger = new Map<string, Bang>();
+  for (const b of builtinBangs) {
+    builtinByTrigger.set(b.t, b);
+  }
+
+  const seenT = new Set<string>();
+  const resolved: Bang[] = [];
+
+  function resolveSingle(bang: CustomBang, visited: Set<string>): Bang | null {
+    if (visited.has(bang.t)) return null;
+    visited.add(bang.t);
+
+    if (!bang.a) {
+      const { enabled: _enabled, origin: _origin, a: _a, ...rest } = bang;
+      return rest as Bang;
+    }
+
+    const targetCustom = customByTrigger.get(bang.a);
+    if (targetCustom) {
+      const resolved = resolveSingle(targetCustom, visited);
+      if (!resolved) return null;
+      return { ...resolved, t: bang.t };
+    }
+
+    const targetBuiltin = builtinByTrigger.get(bang.a);
+    if (targetBuiltin) {
+      return { ...targetBuiltin, t: bang.t };
+    }
+
+    return null;
+  }
 
   for (const b of customBangs) {
     if (b.enabled === false) continue;
-    if (seen.has(b.u)) continue;
-    seen.add(b.u);
-    const { enabled: _enabled, origin: _origin, ...bang } = b;
-    result.push(bang);
+    const bang = resolveSingle(b, new Set());
+    if (!bang) continue;
+    if (seenT.has(bang.t)) continue;
+    seenT.add(bang.t);
+    resolved.push(bang);
   }
 
   for (const b of builtinBangs) {
-    if (seen.has(b.u)) continue;
-    seen.add(b.u);
-    result.push(b);
+    if (seenT.has(b.t)) continue;
+    seenT.add(b.t);
+    resolved.push(b);
   }
 
-  return result;
+  return resolved;
 }
 
-export function parseCustomBangs(value: CustomBang[]): CustomBang[] {
-  return value.map((bang) =>
-    Object.assign({}, bang, {
-      t: bang.t.toLowerCase(),
-      u: bang.u.replace("%s", "{{{s}}}"),
-    }),
-  );
+export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
+  return resolveAliases(customBangs, builtinBangs);
+}
+
+export function parseCustomBangs(value: CustomBangInput[]): CustomBang[] {
+  return value.map((bang): CustomBang => ({
+    c: bang.c ?? "Custom",
+    d: bang.d ?? "",
+    r: bang.r ?? 0,
+    s: bang.s ?? bang.t,
+    sc: bang.sc ?? "Custom",
+    t: bang.t.toLowerCase(),
+    u: bang.u ? bang.u.replace("%s", "{{{s}}}") : "",
+    a: bang.a?.toLowerCase(),
+    enabled: bang.enabled,
+    origin: bang.origin,
+  }));
 }
 
 export function normalizeCustomBangSourceUrl(sourceUrl: string): string {

@@ -6,6 +6,7 @@ import type { CustomBang } from "../custom-bang";
 const props = defineProps<{
   customBangs: CustomBang[];
   selectedBangTags: Set<string>;
+  resolutions: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -42,7 +43,7 @@ watch(items, () => {
         :title="selectedBangTags.has(item.data.t) ? 'Selected' : 'Select'" @click="$emit('select', item.index)"
         @keydown.enter.prevent="$emit('select', item.index)" @keydown.space.prevent="$emit('select', item.index)">
         <div class="flex items-baseline gap-2.5 min-w-0">
-          <strong class="min-w-0 truncate">{{ item.data.s }}</strong>
+          <strong class="min-w-0 truncate">{{ item.data.a ? (resolutions[item.data.a] ?? item.data.s) : item.data.s }}</strong>
           <span class="flex-none text-[13px]" :class="item.data.enabled === false
             ? 'text-[#888] dark:text-[#666]'
             : 'text-[#666] dark:text-[#aaa]'

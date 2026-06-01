@@ -82,6 +82,11 @@ const selectedCount = computed(() => selectedBangs.value.length);
 const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
 const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
 const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
+const resolutions = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  for (const b of allBangs.value) map[b.t] = b.s;
+  return map;
+});
 
 function saveToStorage() {
   localStorage.setItem(LS_CUSTOM_BANGS, JSON.stringify(customBangs.value, null, 2));
@@ -545,7 +550,7 @@ onUnmounted(() => {
               class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
               No bangs match this filter.
             </p>
-            <BangList v-else :custom-bangs="filteredCustomBangs" :selected-bang-tags="selectedBangTags"
+            <BangList v-else :custom-bangs="filteredCustomBangs" :resolutions="resolutions" :selected-bang-tags="selectedBangTags"
               @select="handleSelectBang" @toggle-enabled="toggleBangEnabled" @edit="handleEdit" />
             <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
               {{ filteredCustomBangs.length }} of {{ totalCount }}
