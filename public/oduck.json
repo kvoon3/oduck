@@ -79,5 +79,14 @@
     "sc": "Social",
     "t": "rednote",
     "u": "https://www.rednote.com/search_result?keyword={{{s}}}"
+  },
+  {
+    "c": "Dev",
+    "d": "pi.dev",
+    "r": 0,
+    "s": "pi.dev",
+    "sc": "Dev",
+    "t": "pi",
+    "u": "https://pi.dev/packages?name={{{s}}}"
   }
 ]
