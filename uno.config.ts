@@ -7,6 +7,10 @@ export default defineConfig({
         /\.(vue|svelte|[jt]sx|html)($|\?)/,
         'src/**/*.ts',
       ],
+      exclude: [
+        // Large data file — no utility classes to extract, exclude to avoid bloating the UnoCSS bundle
+        'src/bang.ts',
+      ],
     },
   },
   presets: [

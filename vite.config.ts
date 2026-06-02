@@ -29,6 +29,14 @@ export default defineConfig({
         custom: resolve(import.meta.dirname, "custom.html"),
         search: resolve(import.meta.dirname, "search.html"),
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes("/src/bang.ts")) {
+            return "bang-data";
+          }
+          return null;
+        },
+      },
     },
   },
 });
