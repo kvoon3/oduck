@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { watch, ref, computed, shallowRef } from "vue";
-import type { CustomBang, CustomBangSource } from "../custom-bang";
+import type { CustomBang } from "../custom-bang";
 import { parseCustomBangs } from "../custom-bang";
 import { stripBangMarker } from "../bang-query";
 import BaseModal from "./BaseModal.vue";
-import FoldableSection from "./FoldableSection.vue";
 
 const props = defineProps<{
   visible: boolean;
   error: string;
   loading: boolean;
-  sources: CustomBangSource[];
-  syncingSourceIndex: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -19,8 +16,6 @@ const emit = defineEmits<{
   addBang: [bang: CustomBang];
   importFile: [name: string, file: File];
   importUrl: [name: string, sourceUrl: string];
-  removeSource: [index: number];
-  syncSource: [index: number];
 }>();
 
 const tabs = [
@@ -30,21 +25,6 @@ const tabs = [
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
-
-const recommendedSources = [
-  { name: 'Kagi', icon: 'i-simple-icons-kagi', url: 'https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json' },
-  { name: 'Oduck', icon: 'i-simple-icons-duckduckgo', url: 'https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/oduck.json' },
-] as const;
-
-const uninstalledRecommendations = computed(() =>
-  recommendedSources.filter(
-    rec => !props.sources.some(s => s.name === rec.name)
-  )
-);
-
-function findRecommended(name: string) {
-  return recommendedSources.find(rec => rec.name === name);
-}
 
 const activeTab = ref<TabId>("url");
 
@@ -393,110 +373,39 @@ function handleFileUpload() {
     </div>
 
     <!-- URL tab -->
-    <div v-else-if="activeTab === 'url'" key="url" class="grid gap-6 mt-6">
-      <FoldableSection title="Add from URL">
-        <div class="grid gap-4">
-          <label class="grid gap-1.5 w-full">
-            <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-              Source name
-            </span>
-            <input
-              v-model="sourceName"
-              class="input"
-              placeholder="e.g. Kagi"
-              spellcheck="false"
-              autocomplete="off"
-              :disabled="loading"
-            />
-          </label>
-          <label class="grid gap-1.5 w-full">
-            <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-              JSON source URL
-            </span>
-            <div class="flex gap-2">
-              <input
-                v-model="sourceUrl"
-                class="input font-mono flex-1"
-                placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
-                spellcheck="false"
-                autocomplete="off"
-                :disabled="loading"
-              />
-              <button class="btn-primary py-2.5 shrink-0" type="button" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()" @click="handleUrlSubmit">
-                {{ loading ? "Syncing..." : "Add Source" }}
-              </button>
-            </div>
-          </label>
+    <form v-else-if="activeTab === 'url'" key="url" class="grid gap-4 mt-6" @submit.prevent="handleUrlSubmit">
+      <label class="grid gap-1.5 w-full">
+        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+          Source name
+        </span>
+        <input
+          v-model="sourceName"
+          class="input"
+          placeholder="e.g. Kagi"
+          spellcheck="false"
+          autocomplete="off"
+          :disabled="loading"
+        />
+      </label>
+      <label class="grid gap-1.5 w-full">
+        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
+          JSON source URL
+        </span>
+        <div class="flex gap-2">
+          <input
+            v-model="sourceUrl"
+            class="input font-mono flex-1"
+            placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
+            spellcheck="false"
+            autocomplete="off"
+            :disabled="loading"
+          />
+          <button class="btn-primary py-2.5 shrink-0" type="submit" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()">
+            {{ loading ? "Syncing..." : "Add Source" }}
+          </button>
         </div>
-      </FoldableSection>
-
-      <FoldableSection v-if="uninstalledRecommendations.length > 0" title="Recommended" open>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div
-            v-for="rec in uninstalledRecommendations"
-            :key="rec.name"
-            class="relative flex flex-col items-center gap-2 rounded-lg border border-dashed p-4 bg-transparent"
-          >
-            <a
-              :href="rec.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="absolute top-1 left-2 cursor-pointer"
-            >
-              <div class="size-4 i-ph-link-duotone" />
-            </a>
-            <div :class="rec.icon" class="text-2xl" />
-            <span class="text-xs font-medium">{{ rec.name }}</span>
-            <button
-              class="btn-primary btn-xs mt-0.5"
-              :disabled="loading"
-              @click="emit('importUrl', rec.name, rec.url)"
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      </FoldableSection>
-
-      <FoldableSection v-if="sources.length > 0" title="Installed">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div
-            v-for="(source, index) in sources"
-            :key="source.name"
-            class="relative flex flex-col items-center gap-2 rounded-lg border border-dashed p-4 bg-transparent"
-          >
-
-            <div class="absolute top-1 left-2 flex items-center gap-3">
-              <a
-                :href="source.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                cursor-pointer
-              >
-                <button class="size-4 i-ph-link-duotone" />
-              </a>
-            </div>
-            <div class="absolute top-1 right-1 flex items-center gap-3">
-              <button
-                class="size-4 i-ph-x-circle-duotone"
-                :disabled="loading || syncingSourceIndex !== null"
-                @click="$emit('removeSource', index)"
-              />
-            </div>
-            <div :class="findRecommended(source.name)?.icon ?? 'i-carbon-link'" class="text-2xl" />
-            <span class="text-xs font-medium">{{ source.name }}</span>
-            <button
-              class="btn-primary btn-xs mt-0.5"
-              type="button"
-              :disabled="loading || syncingSourceIndex !== null"
-              @click="$emit('syncSource', index)"
-            >
-              {{ syncingSourceIndex === index ? "Syncing..." : "Sync" }}
-            </button>
-          </div>
-        </div>
-      </FoldableSection>
-    </div>
+      </label>
+    </form>
       </Transition>
     </div>
 

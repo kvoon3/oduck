@@ -16,6 +16,7 @@ import BangAddModal from "./components/BangAddModal.vue";
 import BangSearch from "./components/BangSearch.vue";
 import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
+import BangSourceCards from "./components/BangSourceCards.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
 import CleanConfirmModal from "./components/CleanConfirmModal.vue";
 import ExportConfirmModal from "./components/ExportConfirmModal.vue";
@@ -539,6 +540,16 @@ onUnmounted(() => {
           <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
         </div>
 
+        <BangSourceCards
+          :sources="sources"
+          :loading="importLoading"
+          :syncing-source-index="syncingSourceIndex"
+          class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500"
+          @add-recommended="importFromUrl"
+          @sync-source="syncSource"
+          @remove-source="requestRemoveSource"
+        />
+
         <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
           <section class="flex justify-between items-center gap-2 mb4">
             <div class="relative my-2 flex-1">
@@ -604,10 +615,9 @@ onUnmounted(() => {
         </section>
 
       </div>
-      <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading" :sources="sources"
-        :syncing-source-index="syncingSourceIndex" @close="closeAddModal" @add-bang="handleAddBangSubmit"
-        @import-file="importFromFile" @edit-source="editSource" @remove-source="requestRemoveSource"
-        @sync-source="syncSource" @import-url="importFromUrl" />
+      <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading"
+        @close="closeAddModal" @add-bang="handleAddBangSubmit"
+        @import-file="importFromFile" @import-url="importFromUrl" />
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 
