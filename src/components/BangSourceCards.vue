@@ -12,6 +12,7 @@ const emit = defineEmits<{
   addRecommended: [name: string, url: string];
   syncSource: [index: number];
   removeSource: [index: number];
+  addCustomSource: [];
 }>();
 
 const recommendedSources = [
@@ -119,6 +120,16 @@ const cards = computed<SourceCard[]>(() => {
           Add
         </button>
       </div>
+
+      <!-- Add custom source -->
+      <button
+        class="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed p-4 bg-transparent cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
+        :disabled="loading"
+        @click="emit('addCustomSource')"
+      >
+        <div class="i-ph-plus-circle-duotone text-2xl text-neutral-400 dark:text-neutral-500" />
+        <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Add Source</span>
+      </button>
     </div>
   </div>
 </template>

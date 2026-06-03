@@ -17,6 +17,7 @@ import BangSearch from "./components/BangSearch.vue";
 import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
 import BangSourceCards from "./components/BangSourceCards.vue";
+import SourceAddModal from "./components/SourceAddModal.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
 import CleanConfirmModal from "./components/CleanConfirmModal.vue";
 import ExportConfirmModal from "./components/ExportConfirmModal.vue";
@@ -31,6 +32,7 @@ const editingIndex = ref<number | null>(null);
 const modalVisible = ref(false);
 
 const addModalVisible = shallowRef(false);
+const sourceAddModalVisible = shallowRef(false);
 const importLoading = shallowRef(false);
 const importError = shallowRef("");
 const syncingSourceIndex = shallowRef<number | null>(null);
@@ -362,6 +364,17 @@ function closeAddModal() {
   importError.value = "";
 }
 
+function openSourceAddModal() {
+  importError.value = "";
+  sourceAddModalVisible.value = true;
+}
+
+function closeSourceAddModal() {
+  if (importLoading.value) return;
+  sourceAddModalVisible.value = false;
+  importError.value = "";
+}
+
 async function importFromFile(sourceName: string, file: File) {
   try {
     const parsed = parseCustomBangs(JSON.parse(await file.text()));
@@ -497,6 +510,8 @@ function handleEsc(event: KeyboardEvent) {
       closeSourceRemoveConfirm();
     } else if (exportConfirmVisible.value) {
       closeExportConfirm();
+    } else if (sourceAddModalVisible.value) {
+      closeSourceAddModal();
     } else if (addModalVisible.value) {
       closeAddModal();
     } else if (modalVisible.value) {
@@ -546,6 +561,7 @@ onUnmounted(() => {
           :syncing-source-index="syncingSourceIndex"
           class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500"
           @add-recommended="importFromUrl"
+          @add-custom-source="openSourceAddModal"
           @sync-source="syncSource"
           @remove-source="requestRemoveSource"
         />
@@ -617,7 +633,10 @@ onUnmounted(() => {
       </div>
       <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading"
         @close="closeAddModal" @add-bang="handleAddBangSubmit"
-        @import-file="importFromFile" @import-url="importFromUrl" />
+        @import-file="importFromFile" />
+
+      <SourceAddModal :visible="sourceAddModalVisible" :error="importError" :loading="importLoading"
+        @close="closeSourceAddModal" @import-url="importFromUrl" />
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 

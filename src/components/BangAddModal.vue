@@ -15,18 +15,16 @@ const emit = defineEmits<{
   close: [];
   addBang: [bang: CustomBang];
   importFile: [name: string, file: File];
-  importUrl: [name: string, sourceUrl: string];
 }>();
 
 const tabs = [
-  { id: "url" as const, label: "Preset" },
   { id: "manual" as const, label: "Manual" },
   { id: "file" as const, label: "File" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
-const activeTab = ref<TabId>("url");
+const activeTab = ref<TabId>("manual");
 
 // Manual form
 const tag = ref("");
@@ -49,10 +47,6 @@ const fileHint = computed(() => {
   return "";
 });
 
-// URL
-const sourceUrl = ref("");
-const sourceName = ref("");
-
 function reset() {
   tag.value = "";
   name.value = "";
@@ -61,8 +55,6 @@ function reset() {
   aliasTarget.value = "";
   isAlias.value = false;
   manualError.value = "";
-  sourceUrl.value = "";
-  sourceName.value = "";
   fileSourceName.value = "";
   selectedFile.value = null;
   fileContent.value = "";
@@ -132,12 +124,6 @@ function handleManualSubmit() {
     manualError.value =
       err instanceof Error ? err.message : "Custom bang config is invalid.";
   }
-}
-
-function handleUrlSubmit() {
-  const trimmedName = sourceName.value.trim();
-  const trimmedUrl = sourceUrl.value.trim();
-  if (trimmedName && trimmedUrl) emit("importUrl", trimmedName, trimmedUrl);
 }
 
 function chooseFile() {
@@ -372,40 +358,7 @@ function handleFileUpload() {
       </p>
     </div>
 
-    <!-- URL tab -->
-    <form v-else-if="activeTab === 'url'" key="url" class="grid gap-4 mt-6" @submit.prevent="handleUrlSubmit">
-      <label class="grid gap-1.5 w-full">
-        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-          Source name
-        </span>
-        <input
-          v-model="sourceName"
-          class="input"
-          placeholder="e.g. Kagi"
-          spellcheck="false"
-          autocomplete="off"
-          :disabled="loading"
-        />
-      </label>
-      <label class="grid gap-1.5 w-full">
-        <span class="text-sm font-medium text-[#444] dark:text-[#cfcfcf]">
-          JSON source URL
-        </span>
-        <div class="flex gap-2">
-          <input
-            v-model="sourceUrl"
-            class="input font-mono flex-1"
-            placeholder="https://github.com/user/repo/blob/main/custom-bang.json"
-            spellcheck="false"
-            autocomplete="off"
-            :disabled="loading"
-          />
-          <button class="btn-primary py-2.5 shrink-0" type="submit" :disabled="loading || !sourceName.trim() || !sourceUrl.trim()">
-            {{ loading ? "Syncing..." : "Add Source" }}
-          </button>
-        </div>
-      </label>
-    </form>
+
       </Transition>
     </div>
 
