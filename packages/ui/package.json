@@ -16,7 +16,7 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@antfu/utils": "catalog:",
+    "@antfu/utils": "catalog:inlined",
     "fuse.js": "catalog:"
   },
   "peerDependencies": {
@@ -24,11 +24,11 @@
     "vue": "catalog:"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "catalog:",
-    "oxlint": "catalog:",
-    "tsdown": "^0.22.1",
-    "typescript": "catalog:",
-    "vue-tsc": "^3.3.3"
+    "@vitejs/plugin-vue": "catalog:cli",
+    "oxlint": "catalog:cli",
+    "tsdown": "catalog:cli",
+    "typescript": "catalog:cli",
+    "vue-tsc": "catalog:cli"
   },
   "publishConfig": {
     "exports": {

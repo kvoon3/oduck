@@ -5,117 +5,172 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
-  default:
-    '@antfu/utils':
-      specifier: ^9.3.0
-      version: 9.3.0
+  cli:
+    '@antfu/ni':
+      specifier: ^30.1.0
+      version: 30.1.0
+    '@cloudflare/vite-plugin':
+      specifier: ^1.39.2
+      version: 1.39.2
+    '@iconify-json/carbon':
+      specifier: ^1.2.22
+      version: 1.2.22
+    '@iconify-json/ph':
+      specifier: ^1.2.2
+      version: 1.2.2
+    '@iconify-json/simple-icons':
+      specifier: ^1.2.85
+      version: 1.2.85
     '@vitejs/plugin-vue':
       specifier: ^6.0.7
       version: 6.0.7
+    nano-staged:
+      specifier: ^1.0.2
+      version: 1.0.2
+    oxlint:
+      specifier: ^1.68.0
+      version: 1.68.0
+    oxlint-tsgolint:
+      specifier: ^0.23.0
+      version: 0.23.0
+    simple-git-hooks:
+      specifier: ^2.13.1
+      version: 2.13.1
+    taze:
+      specifier: ^19.14.1
+      version: 19.14.1
+    tsdown:
+      specifier: ^0.22.1
+      version: 0.22.1
+    typescript:
+      specifier: ~6.0.3
+      version: 6.0.3
+    vite:
+      specifier: ^8.0.16
+      version: 8.0.16
+    vite-plugin-pwa:
+      specifier: ^1.3.0
+      version: 1.3.0
+    vue-tsc:
+      specifier: ^3.3.3
+      version: 3.3.3
+    wrangler:
+      specifier: ^4.97.0
+      version: 4.97.0
+  default:
     '@vueuse/core':
       specifier: ^14.3.0
       version: 14.3.0
     fuse.js:
       specifier: ^7.4.1
       version: 7.4.1
-    oxlint:
-      specifier: ^1.68.0
-      version: 1.68.0
-    typescript:
-      specifier: ~6.0.3
-      version: 6.0.3
+    react-grab:
+      specifier: ^0.1.44
+      version: 0.1.44
+    unocss:
+      specifier: ^66.7.0
+      version: 66.7.0
     vue:
       specifier: ^3.5.35
       version: 3.5.35
-    vue-tsc:
-      specifier: ^3.3.3
-      version: 3.3.3
+  inlined:
+    '@antfu/utils':
+      specifier: ^9.3.0
+      version: 9.3.0
+  testing:
+    vitest:
+      specifier: ^4.1.8
+      version: 4.1.8
+  types:
+    '@types/node':
+      specifier: ^25.9.1
+      version: 25.9.1
 
 importers:
 
   .:
     dependencies:
       '@antfu/utils':
-        specifier: ^9.3.0
+        specifier: catalog:inlined
         version: 9.3.0
       '@oduck/ui':
         specifier: workspace:*
         version: link:packages/ui
       '@vitejs/plugin-vue':
-        specifier: ^6.0.7
+        specifier: catalog:cli
         version: 6.0.7(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^14.3.0
+        specifier: 'catalog:'
         version: 14.3.0(vue@3.5.35(typescript@6.0.3))
       fuse.js:
-        specifier: ^7.4.1
+        specifier: 'catalog:'
         version: 7.4.1
       react-grab:
-        specifier: ^0.1.44
+        specifier: 'catalog:'
         version: 0.1.44(react@19.2.6)
       vite-plugin-pwa:
-        specifier: ^1.3.0
+        specifier: catalog:cli
         version: 1.3.0(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))(workbox-build@7.3.0)(workbox-window@7.3.0)
       vue:
-        specifier: ^3.5.35
+        specifier: 'catalog:'
         version: 3.5.35(typescript@6.0.3)
     devDependencies:
       '@antfu/ni':
-        specifier: ^30.1.0
+        specifier: catalog:cli
         version: 30.1.0
       '@cloudflare/vite-plugin':
-        specifier: ^1.39.2
+        specifier: catalog:cli
         version: 1.39.2(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))(workerd@1.20260601.1)(wrangler@4.97.0)
       '@iconify-json/carbon':
-        specifier: ^1.2.22
+        specifier: catalog:cli
         version: 1.2.22
       '@iconify-json/ph':
-        specifier: ^1.2.2
+        specifier: catalog:cli
         version: 1.2.2
       '@iconify-json/simple-icons':
-        specifier: ^1.2.85
+        specifier: catalog:cli
         version: 1.2.85
       '@types/node':
-        specifier: ^25.9.1
+        specifier: catalog:types
         version: 25.9.1
       nano-staged:
-        specifier: ^1.0.2
+        specifier: catalog:cli
         version: 1.0.2
       oxlint:
-        specifier: ^1.68.0
+        specifier: catalog:cli
         version: 1.68.0(oxlint-tsgolint@0.23.0)
       oxlint-tsgolint:
-        specifier: ^0.23.0
+        specifier: catalog:cli
         version: 0.23.0
       simple-git-hooks:
-        specifier: ^2.13.1
+        specifier: catalog:cli
         version: 2.13.1
       taze:
-        specifier: ^19.14.1
+        specifier: catalog:cli
         version: 19.14.1
       typescript:
-        specifier: ~6.0.3
+        specifier: catalog:cli
         version: 6.0.3
       unocss:
-        specifier: ^66.7.0
+        specifier: 'catalog:'
         version: 66.7.0(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))
       vite:
-        specifier: ^8.0.16
+        specifier: catalog:cli
         version: 8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.8
+        specifier: catalog:testing
         version: 4.1.8(@types/node@25.9.1)(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))
       vue-tsc:
-        specifier: 'catalog:'
+        specifier: catalog:cli
         version: 3.3.3(typescript@6.0.3)
       wrangler:
-        specifier: ^4.97.0
+        specifier: catalog:cli
         version: 4.97.0
 
   packages/ui:
     dependencies:
       '@antfu/utils':
-        specifier: 'catalog:'
+        specifier: catalog:inlined
         version: 9.3.0
       '@vueuse/core':
         specifier: 'catalog:'
@@ -128,19 +183,19 @@ importers:
         version: 3.5.35(typescript@6.0.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: 'catalog:'
+        specifier: catalog:cli
         version: 6.0.7(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
       oxlint:
-        specifier: 'catalog:'
+        specifier: catalog:cli
         version: 1.68.0(oxlint-tsgolint@0.23.0)
       tsdown:
-        specifier: ^0.22.1
+        specifier: catalog:cli
         version: 0.22.1(typescript@6.0.3)(vue-tsc@3.3.3(typescript@6.0.3))
       typescript:
-        specifier: 'catalog:'
+        specifier: catalog:cli
         version: 6.0.3
       vue-tsc:
-        specifier: ^3.3.3
+        specifier: catalog:cli
         version: 3.3.3(typescript@6.0.3)
 
 packages:
@@ -1074,10 +1129,6 @@ packages:
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
-  '@jridgewell/gen-mapping@0.3.8':
-    resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
-    engines: {node: '>=6.0.0'}
-
   '@jridgewell/remapping@2.3.5':
     resolution: {integrity: sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==}
 
@@ -1085,18 +1136,11 @@ packages:
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
     engines: {node: '>=6.0.0'}
 
-  '@jridgewell/set-array@1.2.1':
-    resolution: {integrity: sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==}
-    engines: {node: '>=6.0.0'}
-
   '@jridgewell/source-map@0.3.11':
     resolution: {integrity: sha512-ZMp1V8ZFcPG5dIWnQLr3NSI1MiCU7UETdS/A0G8V/XWHvJv3ZsFqutJn1Y5RPmAPX6F3BiE397OqveU/9NCuIA==}
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
-
-  '@jridgewell/trace-mapping@0.3.25':
-    resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
@@ -1958,15 +2002,6 @@ packages:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
 
-  debug@4.4.0:
-    resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -1987,9 +2022,6 @@ packages:
   define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
     engines: {node: '>= 0.4'}
-
-  defu@6.1.6:
-    resolution: {integrity: sha512-f8mefEW4WIVg4LckePx3mALjQSPQgFlg9U8yaPdlsbdYcHQyj9n2zL2LJEA52smeYxOvmd/nB7TpMtHGMTHcug==}
 
   defu@6.1.7:
     resolution: {integrity: sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ==}
@@ -2955,10 +2987,6 @@ packages:
     resolution: {integrity: sha512-M/Q0B2cp4K7kynaT/vnED1j8TlLY+Pp7C6Wl2bl/7u/F0mUVwdyOpwomQb8JpYLitHUssAJRmLZdMCGsrx7i+g==}
     engines: {node: '>=18'}
 
-  tinyglobby@0.2.16:
-    resolution: {integrity: sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==}
-    engines: {node: '>=12.0.0'}
-
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
@@ -3374,7 +3402,7 @@ snapshots:
       fzf: 0.5.2
       package-manager-detector: 1.6.0
       tinyexec: 1.2.2
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
 
   '@antfu/utils@9.3.0': {}
 
@@ -4319,20 +4347,12 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.31
 
-  '@jridgewell/gen-mapping@0.3.8':
-    dependencies:
-      '@jridgewell/set-array': 1.2.1
-      '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.31
-
   '@jridgewell/remapping@2.3.5':
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.8
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/resolve-uri@3.1.2': {}
-
-  '@jridgewell/set-array@1.2.1': {}
 
   '@jridgewell/source-map@0.3.11':
     dependencies:
@@ -4340,11 +4360,6 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
-
-  '@jridgewell/trace-mapping@0.3.25':
-    dependencies:
-      '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@jridgewell/trace-mapping@0.3.31':
     dependencies:
@@ -4690,7 +4705,7 @@ snapshots:
       magic-string: 0.30.21
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       unplugin-utils: 0.3.1
 
   '@unocss/config@66.7.0':
@@ -4800,7 +4815,7 @@ snapshots:
       chokidar: 5.0.0
       magic-string: 0.30.21
       pathe: 2.0.3
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       unplugin-utils: 0.3.1
       vite: 8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0)
 
@@ -5136,10 +5151,6 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
-  debug@4.4.0:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -5157,8 +5168,6 @@ snapshots:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
-
-  defu@6.1.6: {}
 
   defu@6.1.7: {}
 
@@ -6231,7 +6240,7 @@ snapshots:
       pnpm-workspace-yaml: 1.6.1
       restore-cursor: 5.1.0
       tinyexec: 1.2.2
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       unconfig: 7.5.0
       yaml: 2.9.0
 
@@ -6254,11 +6263,6 @@ snapshots:
   tinybench@2.9.0: {}
 
   tinyexec@1.2.2: {}
-
-  tinyglobby@0.2.16:
-    dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
 
   tinyglobby@0.2.17:
     dependencies:
@@ -6359,7 +6363,7 @@ snapshots:
   unconfig@7.5.0:
     dependencies:
       '@quansync/fs': 1.0.0
-      defu: 6.1.6
+      defu: 6.1.7
       jiti: 2.7.0
       quansync: 1.0.0
       unconfig-core: 7.5.0
@@ -6433,9 +6437,9 @@ snapshots:
 
   vite-plugin-pwa@1.3.0(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0))(workbox-build@7.3.0)(workbox-window@7.3.0):
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.3
       pretty-bytes: 6.1.1
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       vite: 8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0)
       workbox-build: 7.3.0
       workbox-window: 7.3.0
@@ -6475,7 +6479,7 @@ snapshots:
       std-env: 4.0.0
       tinybench: 2.9.0
       tinyexec: 1.2.2
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
       vite: 8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.0)
       why-is-node-running: 2.3.0
