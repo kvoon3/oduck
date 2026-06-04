@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+import type { SelectOption } from "../types/select";
 
-export interface SelectOption {
-  label: string;
-  value: string;
-  icon?: string;
-}
+export type { SelectOption };
 
 const props = defineProps<{
   modelValue: string;

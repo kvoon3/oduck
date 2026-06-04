@@ -11,7 +11,7 @@
     "preview": "nr build && wrangler dev",
     "deploy": "nr build && wrangler deploy",
     "up": "nlx taze -I major",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "vue-tsc --noEmit",
     "prepare": "npx simple-git-hooks"
   },
   "devDependencies": {
@@ -24,6 +24,7 @@
     "nano-staged": "^1.0.2",
     "oxlint": "^1.68.0",
     "oxlint-tsgolint": "^0.23.0",
+    "vue-tsc": "catalog:",
     "simple-git-hooks": "^2.13.1",
     "taze": "^19.14.1",
     "typescript": "~6.0.3",
@@ -34,6 +35,7 @@
   },
   "dependencies": {
     "@antfu/utils": "^9.3.0",
+    "@oduck/ui": "workspace:*",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vueuse/core": "^14.3.0",
     "fuse.js": "^7.4.1",
@@ -45,7 +47,7 @@
     "pre-commit": "npx nano-staged"
   },
   "nano-staged": {
-    "*.{js,ts,mjs,mts,cts,cjs,vue}": "oxlint"
+    "*.{js,ts,mjs,mts,cts,cjs,vue}": "oxlint --fix"
   },
   "packageManager": "pnpm@11.5.1+sha512.93f7b57422ea7068257235b4c16eb60762eb68e1dc23723199cc739043ea9be2c4143274a399d8c6defa2b1176226d9ca1c4b63482d6200c1a8fbaa78c1d1485"
 }

@@ -7,7 +7,7 @@ import {
   parseCustomBangs,
   mergeBangs,
 } from "./custom-bang";
-import BangSearch from "./components/BangSearch.vue";
+import { BangSearch } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
 

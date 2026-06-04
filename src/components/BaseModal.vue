@@ -28,7 +28,7 @@ function removeFromStack() {
 }
 
 function isTopModal() {
-  return modalStack.at(-1) === modalId;
+  return modalStack[modalStack.length - 1] === modalId;
 }
 
 watch(

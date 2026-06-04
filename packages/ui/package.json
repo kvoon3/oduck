@@ -1,0 +1,39 @@
+{
+  "name": "@oduck/ui",
+  "type": "module",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "oxlint",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/utils": "catalog:",
+    "fuse.js": "catalog:"
+  },
+  "peerDependencies": {
+    "@vueuse/core": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "oxlint": "catalog:",
+    "tsdown": "^0.22.1",
+    "typescript": "catalog:",
+    "vue-tsc": "^3.3.3"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js",
+      "./package.json": "./package.json"
+    }
+  }
+}

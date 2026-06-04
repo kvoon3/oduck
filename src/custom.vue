@@ -13,7 +13,7 @@ import {
 } from "./custom-bang";
 import BangModal from "./components/BangModal.vue";
 import BangAddModal from "./components/BangAddModal.vue";
-import BangSearch from "./components/BangSearch.vue";
+import { BangSearch } from "@oduck/ui";
 import BangList from "./components/BangList.vue";
 import BangFilterPopup from "./components/BangFilterPopup.vue";
 import BangSourceCards from "./components/BangSourceCards.vue";
@@ -455,27 +455,6 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
 
 async function syncSource(index: number) {
   await syncSourceAtIndex(index);
-}
-
-async function editSource(index: number, sourceUrl: string) {
-  const source = sources.value[index];
-  if (!source) return;
-
-  const trimmed = sourceUrl.trim();
-
-  syncingSourceIndex.value = index;
-  importError.value = "";
-
-  try {
-    const nextBangs = await loadCustomBangsFromUrl(trimmed);
-    source.url = trimmed;
-    replaceSourceBangs(source, nextBangs);
-  } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : "Failed to update custom bang source.";
-  } finally {
-    syncingSourceIndex.value = null;
-  }
 }
 
 function requestRemoveSource(index: number) {

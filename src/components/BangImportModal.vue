@@ -46,7 +46,7 @@ async function editSource(index: number, url: string) {
   editingSourceTextarea.value?.focus();
 }
 
-function setEditingSourceTextarea(element: Element | null) {
+function setEditingSourceTextarea(element: unknown) {
   editingSourceTextarea.value = element instanceof HTMLTextAreaElement
     ? element
     : null;

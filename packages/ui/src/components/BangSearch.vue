@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import Fuse from "fuse.js";
-import type { Bang } from "../custom-bang";
+import type { Bang } from "../types/custom-bang";
 import { useBang } from "../composables/useBang";
-import { addSearchHistory, getSearchHistory, type SearchHistoryEntry } from "../search-history";
+import { addSearchHistory, getSearchHistory, type SearchHistoryEntry } from "../utils/search-history";
 import BaseSelect, { type SelectOption } from "./BaseSelect.vue";
 
 const props = defineProps<{
