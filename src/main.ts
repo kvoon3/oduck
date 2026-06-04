@@ -8,6 +8,7 @@ import {
   parseCustomBangs,
   mergeBangs,
 } from "./custom-bang";
+import { addSearchHistory } from "./search-history";
 
 import 'virtual:uno.css'
 
@@ -185,9 +186,15 @@ function getBangredirectUrl() {
     );
   }
 
-  return cleanQuery && fallbackEngineUrl
-    ? fallbackEngineUrl.replace("{{{s}}}", encodeURIComponent(cleanQuery).replace(/%2F/g, "/"))
-    : null;
+  if (!cleanQuery || !fallbackEngineUrl) return null;
+
+  const fallbackUrl = fallbackEngineUrl.replace(
+    "{{{s}}}",
+    encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
+  );
+
+  addSearchHistory({ query: cleanQuery, url: fallbackUrl });
+  return fallbackUrl;
 }
 
 function doRedirect() {
