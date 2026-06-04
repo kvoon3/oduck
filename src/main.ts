@@ -1,6 +1,6 @@
 import "./components/oduck-header";
 import "./components/oduck-footer";
-import { bangs } from "./bang";
+import { bangs } from "@oduck/ui";
 import { parseQuery } from "./bang-query";
 import {
   type Bang,

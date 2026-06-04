@@ -1,4 +1,4 @@
-import type { bangs } from "./bang";
+import { bangs } from "@oduck/ui";
 
 export type Bang = (typeof bangs)[number];
 export type BangOrigin = string;

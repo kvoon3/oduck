@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, shallowRef } from "vue";
 import Fuse from "fuse.js";
-import { bangs } from "./bang";
+import { bangs } from "@oduck/ui";
 import {
   type Bang,
   type BangOrigin,

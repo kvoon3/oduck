@@ -29,4 +29,8 @@ dist-ssr
 !.dev.vars.example
 .env*
 !.env.example
+
+# WXT generated files
+.output
+.wxt
 /.commandcode/taste/taste.md

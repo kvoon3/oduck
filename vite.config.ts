@@ -17,6 +17,9 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+      },
     }),
     UnoCSS(),
     cloudflare(),
@@ -31,7 +34,7 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
-          if (id.includes("/src/bang.ts")) {
+          if (id.includes("bangs.ts") || id.includes("/src/bang.ts")) {
             return "bang-data";
           }
           return null;

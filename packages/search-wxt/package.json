@@ -1,0 +1,27 @@
+{
+  "name": "@oduck/search-wxt",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "lint": "oxlint",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@oduck/ui": "workspace:*",
+    "@vueuse/core": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@wxt-dev/module-vue": "^1.0.3",
+    "@wxt-dev/unocss": "^1.0.1",
+    "oxlint": "catalog:cli",
+    "typescript": "catalog:cli",
+    "unocss": "catalog:",
+    "vue-tsc": "catalog:cli",
+    "wxt": "^0.20.26"
+  }
+}

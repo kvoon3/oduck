@@ -197,6 +197,7 @@ function onKeydown(e: KeyboardEvent) {
       selectHint(hint.bang);
     }
   } else if (e.key === "Escape") {
+    e.stopPropagation();
     hintsHidden.value = true;
   }
 }

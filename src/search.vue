@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
-import { bangs } from "./bang";
+import { bangs } from "@oduck/ui";
 import {
   type Bang,
   type CustomBang,

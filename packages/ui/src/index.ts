@@ -31,6 +31,9 @@ export {
 // Composables
 export { useBang, type BangMatch } from './composables/useBang'
 
+// Data
+export { bangs } from './bangs'
+
 // Components
 export { default as BaseSelect } from './components/BaseSelect.vue'
 export { default as BangSearch } from './components/BangSearch.vue'
