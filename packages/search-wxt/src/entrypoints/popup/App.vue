@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { BangList, BangModal, bangs, type CustomBang, type Bang, mergeBangs, parseCustomBangs } from "@oduck/ui";
+import { bangs, type Bang, mergeBangs, parseCustomBangs } from "@oduck/ui";
+import type { CustomBang } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
 const searchQuery = ref("");
-const selectedTags = ref<Set<string>>(new Set());
-const modalVisible = ref(false);
-const editingBang = ref<CustomBang | null>(null);
 
 const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
 
 const filteredBangs = computed(() => {
-  if (!searchQuery.value.trim()) return customBangs.value;
+  if (!searchQuery.value.trim()) return allBangs.value;
   const q = searchQuery.value.trim().toLowerCase();
-  return customBangs.value.filter((b) =>
+  return allBangs.value.filter((b) =>
     b.t.toLowerCase().includes(q) ||
     b.s.toLowerCase().includes(q) ||
     (b.sc && b.sc.toLowerCase().includes(q))
@@ -45,43 +43,6 @@ async function loadCustomBangs() {
   }
 }
 
-function toggleEnabled(index: number) {
-  const bang = filteredBangs.value[index];
-  if (!bang) return;
-  const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
-  if (realIdx === -1) return;
-  customBangs.value[realIdx].enabled = customBangs.value[realIdx].enabled === false ? undefined : false;
-  saveToStorage();
-}
-
-function handleEdit(index: number) {
-  const bang = filteredBangs.value[index];
-  if (!bang) return;
-  editingBang.value = { ...bang };
-  modalVisible.value = true;
-}
-
-function handleModalSubmit(bang: CustomBang) {
-  const existing = customBangs.value.findIndex((b) => b.t === bang.t);
-  if (existing !== -1) {
-    customBangs.value[existing] = bang;
-  } else {
-    customBangs.value.push(bang);
-  }
-  saveToStorage();
-  modalVisible.value = false;
-  editingBang.value = null;
-}
-
-function closeModal() {
-  modalVisible.value = false;
-  editingBang.value = null;
-}
-
-function saveToStorage() {
-  void browser.storage.local.set({ "custom-bangs": JSON.stringify(customBangs.value, null, 2) });
-}
-
 async function openManager() {
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -91,14 +52,6 @@ async function openManager() {
     void browser.tabs.create({ url: "https://oduck.io/custom.html" });
   }
 }
-
-const resolutions = computed(() => {
-  const map: Record<string, string> = {};
-  for (const b of allBangs.value) map[b.t] = b.s;
-  return map;
-});
-
-const enabledCount = computed(() => customBangs.value.filter((b) => b.enabled !== false).length);
 
 onMounted(() => {
   void loadCustomBangs();
@@ -110,10 +63,10 @@ onMounted(() => {
     <div class="flex items-center gap-2">
       <span class="i-ph-duck-duotone text-xl text-neutral-600 dark:text-neutral-400" />
       <h1 class="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-        Custom Bangs
+        Bangs
       </h1>
       <span class="ml-auto text-xs text-neutral-400 dark:text-neutral-500">
-        {{ enabledCount }}/{{ customBangs.length }} enabled
+        {{ filteredBangs.length }} bangs
       </span>
     </div>
 
@@ -121,31 +74,33 @@ onMounted(() => {
       v-model="searchQuery"
       type="text"
       class="input w-full"
-      placeholder="Search your bangs..."
+      placeholder="Search bangs..."
     />
 
     <div class="max-h-80 overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-md">
-      <BangList
-        v-if="filteredBangs.length"
-        :custom-bangs="filteredBangs"
-        :selected-bang-tags="selectedTags"
-        :resolutions="resolutions"
-        height="h-64"
-        @toggle-enabled="toggleEnabled"
-        @edit="handleEdit"
-      />
+      <ul v-if="filteredBangs.length" class="list-none p-0 m-0">
+        <li
+          v-for="bang in filteredBangs"
+          :key="bang.t"
+          class="flex items-center gap-2 px-3 py-1.5 text-sm border-b border-neutral-100 dark:border-neutral-800 last:border-b-0"
+        >
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 w-16 text-right truncate">
+            {{ bang.sc }}
+          </span>
+          <span class="font-medium text-neutral-800 dark:text-neutral-200">
+            !{{ bang.t }}
+          </span>
+          <span class="text-neutral-500 dark:text-neutral-400 truncate ml-auto text-xs">
+            {{ bang.s }}
+          </span>
+        </li>
+      </ul>
       <p v-else class="p-4 text-center text-sm text-neutral-400">
         No bangs match this filter.
       </p>
     </div>
 
-    <div class="flex justify-between items-center pt-2 border-t border-neutral-200 dark:border-neutral-700">
-      <button
-        class="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
-        @click="modalVisible = true"
-      >
-        + Add Bang
-      </button>
+    <div class="flex justify-end pt-2 border-t border-neutral-200 dark:border-neutral-700">
       <button
         class="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
         @click="openManager"
@@ -154,11 +109,4 @@ onMounted(() => {
       </button>
     </div>
   </div>
-
-  <BangModal
-    :visible="modalVisible"
-    :editing-bang="editingBang"
-    @submit="handleModalSubmit"
-    @close="closeModal"
-  />
 </template>
