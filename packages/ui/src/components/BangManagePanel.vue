@@ -154,14 +154,14 @@ function handleSelect(index: number) {
 
     <p
       v-if="bangs.length === 0"
-      class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])"
+      class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])"
     >
       No custom bangs yet.
     </p>
     <template v-else>
       <p
         v-if="filteredBangs.length === 0"
-        class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])"
+        class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])"
       >
         No bangs match this filter.
       </p>

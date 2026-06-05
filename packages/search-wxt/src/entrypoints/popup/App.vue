@@ -39,13 +39,7 @@ async function loadCustomBangs() {
 }
 
 async function openManager() {
-  try {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    const url = tab?.url ? new URL(tab.url).origin + "/custom.html" : "https://oduck.io/custom.html";
-    void browser.tabs.create({ url });
-  } catch {
-    void browser.tabs.create({ url: "https://oduck.io/custom.html" });
-  }
+  void browser.tabs.create({ url: "https://oduck.kvoon.me/custom" });
 }
 
 onMounted(() => {
@@ -54,7 +48,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-[420px] p-4 flex flex-col gap-3">
+  <div class="w-[420px] p-4 flex flex-col gap-3 bg-white dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100">
     <div class="flex items-center gap-2">
       <span class="i-ph-duck-duotone text-xl text-neutral-600 dark:text-neutral-400" />
       <h1 class="text-sm font-medium text-neutral-800 dark:text-neutral-200">
@@ -72,10 +66,11 @@ onMounted(() => {
     >
       <template #actions="">
         <button
-          class="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
+          class="btn btn-icon-transparent focus-ring h-9 w-9"
+          aria-label="Open Manager"
           @click="openManager"
         >
-          Open Manager →
+          <span class="i-ph-gear-duotone text-[18px]" aria-hidden="true" />
         </button>
       </template>
     </BangManagePanel>

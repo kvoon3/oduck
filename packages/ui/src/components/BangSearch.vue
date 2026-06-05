@@ -248,7 +248,7 @@ onMounted(() => {
             class="pl0 absolute left-0 right-0 top-full mt-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-md overflow-hidden z-10">
             <li v-for="(hint, i) in hints" :key="hint.key"
               class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer"
-              :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-800:50' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
+              :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-800/50' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
               @mousedown.prevent="hint.type === 'bang' ? selectHint(hint.bang) : selectHistory(hint.history)" @mouseenter="hintIndex = i">
               <template v-if="hint.type === 'bang'">
                 <span class="text-neutral-500 dark:text-neutral-400 text-xs w-12 text-right truncate shrink-0">{{ hint.bang.sc
