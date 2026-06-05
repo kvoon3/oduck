@@ -39,10 +39,9 @@ function onBackdropClick() {
 
 async function loadCustomBangs() {
   try {
-    const result = await browser.storage.local.get("custom-bangs");
-    const saved = result["custom-bangs"];
+    const saved = localStorage.getItem("custom-bangs");
     if (!saved) return;
-    customBangs.value = parseCustomBangs(typeof saved === "string" ? JSON.parse(saved) : saved);
+    customBangs.value = parseCustomBangs(JSON.parse(saved));
   } catch {
     // ignore
   }

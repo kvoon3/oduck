@@ -11,7 +11,7 @@ import {
   parseCustomBangs,
   mergeBangs,
 } from "./custom-bang";
-import BangModal from "./components/BangModal.vue";
+import { BangModal } from "@oduck/ui";
 import BangAddModal from "./components/BangAddModal.vue";
 import { BangSearch } from "@oduck/ui";
 import BangList from "./components/BangList.vue";

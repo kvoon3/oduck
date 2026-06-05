@@ -7,16 +7,23 @@ function syncAllBangs() {
   allBangs = mergeBangs(customBangs, bangs);
 }
 
-async function loadStoredBangs() {
+function loadFromStorage(saved: unknown) {
+  if (saved) {
+    customBangs = parseCustomBangs(typeof saved === "string" ? JSON.parse(saved) : saved);
+  } else {
+    customBangs = [];
+  }
+  syncAllBangs();
+}
+
+async function fetchCustomBangsFromActiveTab(): Promise<string | null> {
   try {
-    const result = await browser.storage.local.get("custom-bangs");
-    const saved = result["custom-bangs"];
-    if (saved) {
-      customBangs = parseCustomBangs(typeof saved === "string" ? JSON.parse(saved) : saved);
-      syncAllBangs();
-    }
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) return null;
+    const res = await browser.tabs.sendMessage(tab.id, { type: "get-custom-bangs" });
+    return res?.customBangs ?? null;
   } catch {
-    // ignore
+    return null;
   }
 }
 
@@ -45,21 +52,24 @@ function getRedirectUrl(input: string): string | null {
 }
 
 export default defineBackground(() => {
-  void loadStoredBangs();
+  // Initial load from extension storage (synced by content script on page load)
+  void browser.storage.local.get("custom-bangs").then((result) => {
+    loadFromStorage(result["custom-bangs"]);
+  });
 
   browser.storage.local.onChanged.addListener((changes) => {
     if (changes["custom-bangs"]) {
-      const saved = changes["custom-bangs"].newValue;
-      if (saved) {
-        customBangs = parseCustomBangs(typeof saved === "string" ? JSON.parse(saved) : saved);
-      } else {
-        customBangs = [];
-      }
-      syncAllBangs();
+      loadFromStorage(changes["custom-bangs"].newValue);
     }
   });
 
-  browser.omnibox.onInputChanged.addListener((text, suggest) => {
+  browser.omnibox.onInputChanged.addListener(async (text, suggest) => {
+    // Try to refresh from active tab's content script before responding
+    const fresh = await fetchCustomBangsFromActiveTab();
+    if (fresh) {
+      loadFromStorage(fresh);
+    }
+
     const parsed = parseQuery(text.trim());
     const token = parsed.bang;
     if (!token) {

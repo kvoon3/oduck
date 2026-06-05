@@ -35,5 +35,8 @@ export { useBang, type BangMatch } from './composables/useBang'
 export { bangs } from './bangs'
 
 // Components
+export { default as BaseModal } from './components/BaseModal.vue'
 export { default as BaseSelect } from './components/BaseSelect.vue'
 export { default as BangSearch } from './components/BangSearch.vue'
+export { default as BangList } from './components/BangList.vue'
+export { default as BangModal } from './components/BangModal.vue'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, ref, computed } from "vue";
-import { stripBangMarker } from "../bang-query";
-import { type CustomBang, parseCustomBangs } from "../custom-bang";
+import { stripBangMarker } from "../utils/bang-query";
+import { type CustomBang, parseCustomBangs } from "../types/custom-bang";
 import BaseModal from "./BaseModal.vue";
 
 const props = defineProps<{
