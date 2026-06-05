@@ -109,7 +109,7 @@ onClickOutside(rootRef, () => {
       leave-to-class="popup-leave-to"
     >
       <ul v-if="open"
-        class="popup-surface absolute left-0 top-full z-30 w-[220px] origin-top-left list-none border rounded-md p0 my1 mx0"
+        class="popup-surface absolute left-0 top-full z-30 w-[220px] origin-top-left list-none border rounded-md p0 my1 mx0 bg-white dark:bg-neutral-900 shadow-lg"
         role="listbox" :aria-label="ariaLabel" @keydown="onListKeydown">
         <li v-for="(option, index) in options" :key="option.value" :ref="(element) => setOptionRef(element, index)"
           class="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-sm outline-none transition duration-150"
