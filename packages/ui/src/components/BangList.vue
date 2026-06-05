@@ -8,6 +8,7 @@ const props = defineProps<{
   selectedBangTags: Set<string>;
   resolutions: Record<string, string>;
   height?: string;
+  showActions?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -36,8 +37,9 @@ watch(items, () => {
   <div v-bind="containerProps" :class="height ?? 'h-120'">
     <div v-bind="wrapperProps">
       <div v-for="item in list" :key="item.data.bang.t + '-' + item.index"
-        class="mb1 grid grid-cols-[minmax(0,1fr)_auto] items-center px-3.5 py-1.5 cursor-pointer transition-[background-color,color,box-shadow] duration-150"
+        class="mb1 grid items-center px-3.5 py-1.5 cursor-pointer transition-[background-color,color,box-shadow] duration-150"
         :class="[
+          showActions ? 'grid-cols-[minmax(0,1fr)_auto]' : 'grid-cols-1',
           item.data.bang.enabled === false
             ? 'bg-[#f1f1f1] text-[#777] op-65 hover:op-85 dark:bg-[#111]'
             : 'bg-[#fafafa] text-[#1a1a1a] hover:bg-[#f3f3f3] dark:(bg-[#171717] text-[#d4d4d4] hover:bg-[#1d1d1d])',
@@ -47,14 +49,18 @@ watch(items, () => {
         ]" role="option" tabindex="0" :aria-selected="selectedBangTags.has(item.data.bang.t)"
         :title="selectedBangTags.has(item.data.bang.t) ? 'Selected' : 'Select'" @click="$emit('select', item.index)"
         @keydown.enter.prevent="$emit('select', item.index)" @keydown.space.prevent="$emit('select', item.index)">
-        <div class="flex items-baseline gap-2.5 min-w-0">
-          <strong class="min-w-0 truncate">{{ item.data.displayName }}</strong>
-          <span class="flex-none text-[13px]" :class="item.data.bang.enabled === false
-            ? 'text-[#888] dark:text-[#555]'
-            : 'text-[#666] dark:text-[#888]'
-            ">!{{ item.data.bang.t }}</span>
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 w-16 text-right truncate shrink-0">
+            {{ item.data.bang.sc }}
+          </span>
+          <span class="font-medium text-sm w-16 truncate shrink-0">
+            !{{ item.data.bang.t }}
+          </span>
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+            {{ item.data.bang.d }}
+          </span>
         </div>
-        <div v-if="item.data.bang.origin !== undefined" class="flex gap-1.5">
+        <div v-if="showActions && item.data.bang.origin !== undefined" class="flex gap-1.5">
           <button class="btn-secondary btn-sm bg-transparent"
             :class="item.data.bang.enabled === false
               ? 'text-red-400 hover:bg-red-100 hover:text-red-600 dark:(text-red-400 hover:bg-red-900/30 hover:text-red-300)'

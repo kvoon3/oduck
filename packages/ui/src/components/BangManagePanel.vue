@@ -10,6 +10,7 @@ const props = defineProps<{
   sources: CustomBangSource[];
   resolutions: Record<string, string>;
   modelValue?: Set<string>;
+  showActions?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -157,6 +158,7 @@ function handleSelect(index: number) {
         :custom-bangs="filteredBangs"
         :resolutions="resolutions"
         :selected-bang-tags="selectedBangTags"
+        :show-actions="showActions"
         @toggle-enabled="handleToggleEnabled"
         @edit="handleEdit"
         @select="handleSelect"

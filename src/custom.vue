@@ -491,6 +491,7 @@ onUnmounted(() => {
             :bangs="allBangs"
             :sources="sources"
             :resolutions="resolutions"
+            show-actions
             @toggle-enabled="toggleBangEnabled"
             @edit="handleEdit"
             @select="handleSelectBang"

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { BangList, bangs, type Bang, mergeBangs, parseCustomBangs } from "@oduck/ui";
+import { BangManagePanel, bangs, mergeBangs, parseCustomBangs } from "@oduck/ui";
 import type { CustomBang } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
-const emptySet = new Set<string>();
 
 const allBangs = computed<CustomBang[]>(() => {
   const merged = mergeBangs(customBangs.value, bangs);
@@ -72,22 +71,19 @@ onMounted(() => {
       </span>
     </div>
 
-    <div class="max-h-80 overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-md">
-      <BangList
-        :custom-bangs="allBangs"
-        :selected-bang-tags="emptySet"
-        :resolutions="resolutions"
-        height="h-64"
-      />
-    </div>
-
-    <div class="flex justify-end pt-2 border-t border-neutral-200 dark:border-neutral-700">
-      <button
-        class="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
-        @click="openManager"
-      >
-        Open Manager →
-      </button>
-    </div>
+    <BangManagePanel
+      :bangs="allBangs"
+      :sources="[]"
+      :resolutions="resolutions"
+    >
+      <template #actions="">
+        <button
+          class="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
+          @click="openManager"
+        >
+          Open Manager →
+        </button>
+      </template>
+    </BangManagePanel>
   </div>
 </template>
