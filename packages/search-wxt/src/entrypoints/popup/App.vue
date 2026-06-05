@@ -5,13 +5,7 @@ import type { CustomBang } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
 
-const allBangs = computed<CustomBang[]>(() => {
-  const merged = mergeBangs(customBangs.value, bangs);
-  for (const b of merged) {
-    (b as CustomBang).enabled ??= true;
-  }
-  return merged as CustomBang[];
-});
+const allBangs = computed<CustomBang[]>(() => mergeBangs(customBangs.value, bangs));
 
 const resolutions = computed(() => {
   const map: Record<string, string> = {};

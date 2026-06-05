@@ -64,7 +64,7 @@ function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[]
 
     const aliases = normalizeA(bang.a);
     if (!aliases || aliases.length === 0) {
-      const { enabled: _enabled, origin: _origin, a: _a, ...rest } = bang;
+      const { a: _a, ...rest } = bang;
       return rest as Bang;
     }
 
@@ -105,8 +105,8 @@ function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[]
   return resolved;
 }
 
-export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
-  return resolveAliases(customBangs, builtinBangs);
+export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): CustomBang[] {
+  return resolveAliases(customBangs, builtinBangs) as CustomBang[];
 }
 
 export function parseCustomBangs(value: CustomBangInput[]): CustomBang[] {

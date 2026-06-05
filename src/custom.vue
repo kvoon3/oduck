@@ -48,7 +48,7 @@ const selectedBangs = computed(() => customBangs.value.filter((bang) => selected
 const selectedCount = computed(() => selectedBangs.value.length);
 const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
 const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
-const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => mergeBangs(customBangs.value, bangs));
 const resolutions = computed<Record<string, string>>(() => {
   const map: Record<string, string> = {};
   for (const b of allBangs.value) map[b.t] = b.s;
