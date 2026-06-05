@@ -519,6 +519,21 @@ async function syncSource(index: number) {
   await syncSourceAtIndex(index);
 }
 
+function handleToggleSourceEnabled(index: number) {
+  const source = sources.value[index];
+  if (!source) return;
+
+  const sourceBangs = customBangs.value.filter(b => b.origin === source.name);
+  if (sourceBangs.length === 0) return;
+
+  const allEnabled = sourceBangs.every(b => b.enabled !== false);
+
+  for (const bang of sourceBangs) {
+    bang.enabled = !allEnabled;
+  }
+  saveToStorage();
+}
+
 function requestRemoveSource(index: number) {
   if (!sources.value[index]) return;
   sourceRemoveIndex.value = index;
@@ -605,6 +620,7 @@ onUnmounted(() => {
 
           <BangSourceCards
             :sources="sources"
+            :custom-bangs="customBangs"
             :loading="importLoading"
             :syncing-source-index="syncingSourceIndex"
             class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500"
@@ -612,6 +628,7 @@ onUnmounted(() => {
             @add-custom-source="openSourceAddModal"
             @sync-source="syncSource"
             @remove-source="requestRemoveSource"
+            @toggle-source-enabled="handleToggleSourceEnabled"
           />
 
           <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
