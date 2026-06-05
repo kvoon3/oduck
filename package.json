@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "dev:wxt": "cd packages/search-wxt && wxt",
+    "build:wxt": "cd packages/search-wxt && wxt build",
+    "zip:wxt": "cd packages/search-wxt && wxt zip",
     "lint": "oxlint",
     "test": "vitest run",
     "preview": "nr build && wrangler dev",
