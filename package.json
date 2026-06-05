@@ -21,7 +21,6 @@
     "@iconify-json/ph": "catalog:cli",
     "@iconify-json/simple-icons": "catalog:cli",
     "@types/node": "catalog:types",
-    "agent-browser": "catalog:",
     "nano-staged": "catalog:cli",
     "oxlint": "catalog:cli",
     "oxlint-tsgolint": "catalog:cli",

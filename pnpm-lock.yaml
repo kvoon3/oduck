@@ -61,9 +61,6 @@ catalogs:
     '@vueuse/core':
       specifier: ^14.3.0
       version: 14.3.0
-    agent-browser:
-      specifier: ^0.27.1
-      version: 0.27.1
     fuse.js:
       specifier: ^7.4.1
       version: 7.4.1
@@ -136,9 +133,6 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 25.9.1
-      agent-browser:
-        specifier: 'catalog:'
-        version: 0.27.1
       nano-staged:
         specifier: catalog:cli
         version: 1.0.2
@@ -1947,11 +1941,6 @@ packages:
   adm-zip@0.5.17:
     resolution: {integrity: sha512-+Ut8d9LLqwEvHHJl1+PIHqoyDxFgVN847JTVM3Izi3xHDWPE4UtzzXysMZQs64DMcrJfBeS/uoEP4AD3HQHnQQ==}
     engines: {node: '>=12.0'}
-
-  agent-browser@0.27.1:
-    resolution: {integrity: sha512-lLzpWDV7nlVsA5km7yMCH1wppvnLLNx160hLwLdDUkCst9x38UhhxoiTmmJ2qreOnCa/Hp4/Gm6Adkahhtb6Hg==}
-    engines: {node: '>=24.0.0', pnpm: '>=11.0.0'}
-    hasBin: true
 
   agent-install@0.0.5:
     resolution: {integrity: sha512-nHlms9BkP8ZiY79HrwCGiA2DcNaXrAaJrCM/BEqQ7MEsSKyCk+2A76xPGylIfASZSZE0SaU3T0bNSg4rBPIJAQ==}
@@ -6133,8 +6122,6 @@ snapshots:
   acorn@8.16.0: {}
 
   adm-zip@0.5.17: {}
-
-  agent-browser@0.27.1: {}
 
   agent-install@0.0.5:
     dependencies:
