@@ -22,7 +22,6 @@ export {
   type SearchHistoryEntry,
 } from './utils/search-history'
 export {
-  mergeBangs,
   parseCustomBangs,
   normalizeCustomBangSourceUrl,
   loadCustomBangsFromUrl,
@@ -30,9 +29,6 @@ export {
 
 // Composables
 export { useBang, type BangMatch } from './composables/useBang'
-
-// Data
-export { bangs } from './bangs'
 
 // Components
 export { default as BaseModal } from './components/BaseModal.vue'

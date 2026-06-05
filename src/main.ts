@@ -1,12 +1,9 @@
 import "./components/oduck-header";
 import "./components/oduck-footer";
-import { bangs } from "@oduck/ui";
 import { parseQuery } from "./bang-query";
 import {
-  type Bang,
   type CustomBang,
   parseCustomBangs,
-  mergeBangs,
 } from "./custom-bang";
 import { addSearchHistory } from "./search-history";
 
@@ -26,7 +23,7 @@ const fallbackEngineUrl =
     : searchEngines[fallbackEngine] ?? searchEngines.google;
 
 let customBangs: CustomBang[] = [];
-let allBangs: Bang[] = bangs;
+let allBangs: CustomBang[] = [];
 
 function getSearchEngineUrl() {
   return `${window.location.origin}?q=%s`;
@@ -49,7 +46,7 @@ function getSavedCustomBangs(): CustomBang[] | null {
 }
 
 function syncAllBangs() {
-  allBangs = mergeBangs(customBangs, bangs);
+  allBangs = customBangs;
 }
 
 function downloadJson(filename: string, value: unknown) {

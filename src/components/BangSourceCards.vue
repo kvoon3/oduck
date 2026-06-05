@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const recommendedSources = [
   { name: "Kagi", icon: "i-simple-icons-kagi", url: "https://raw.githubusercontent.com/kagisearch/bangs/refs/heads/main/data/bangs.json" },
   { name: "Oduck", icon: "i-simple-icons-duckduckgo", url: "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/oduck.json" },
+  { name: "DuckDuckGo", icon: "i-simple-icons-duckduckgo", url: "https://raw.githubusercontent.com/kvoon3/oduck/refs/heads/main/public/unduck.json" },
 ] as const;
 
 interface SourceCard {

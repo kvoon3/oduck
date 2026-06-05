@@ -1,11 +1,6 @@
-import { bangs, parseQuery, mergeBangs, parseCustomBangs, type Bang, type CustomBang } from "@oduck/ui";
+import { parseQuery, parseCustomBangs, type CustomBang } from "@oduck/ui";
 
 let customBangs: CustomBang[] = [];
-let allBangs: Bang[] = bangs;
-
-function syncAllBangs() {
-  allBangs = mergeBangs(customBangs, bangs);
-}
 
 function loadFromStorage(saved: unknown) {
   if (saved) {
@@ -13,7 +8,6 @@ function loadFromStorage(saved: unknown) {
   } else {
     customBangs = [];
   }
-  syncAllBangs();
 }
 
 async function fetchCustomBangsFromActiveTab(): Promise<string | null> {
@@ -40,7 +34,7 @@ function getRedirectUrl(input: string): string | null {
   if (!trimmed) return null;
 
   const parsed = parseQuery(trimmed);
-  const bang = allBangs.find((b) => b.t === parsed.bang) ?? null;
+  const bang = customBangs.find((b) => b.t === parsed.bang) ?? null;
 
   if (bang) {
     if (!parsed.cleanQuery) return `https://${bang.d}`;
@@ -77,7 +71,7 @@ export default defineBackground(() => {
       return;
     }
 
-    const matches = allBangs
+    const matches = customBangs
       .filter((b) => b.t.startsWith(token))
       .slice(0, 5)
       .map((b) => ({

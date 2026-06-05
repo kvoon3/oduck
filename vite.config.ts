@@ -34,9 +34,6 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
-          if (id.includes("bangs.ts") || id.includes("/src/bang.ts")) {
-            return "bang-data";
-          }
           return null;
         },
       },

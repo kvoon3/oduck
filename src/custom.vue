@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, shallowRef } from "vue";
-import Fuse from "fuse.js";
-import { bangs } from "@oduck/ui";
 import {
-  type Bang,
-  type BangOrigin,
   type CustomBang,
   type CustomBangSource,
   loadCustomBangsFromUrl,
   parseCustomBangs,
-  mergeBangs,
 } from "./custom-bang";
 import { BangModal, BangManagePanel } from "@oduck/ui";
 import BangAddModal from "./components/BangAddModal.vue";
@@ -48,7 +43,7 @@ const selectedBangs = computed(() => customBangs.value.filter((bang) => selected
 const selectedCount = computed(() => selectedBangs.value.length);
 const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
 const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
-const allBangs = computed<CustomBang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => customBangs.value);
 const resolutions = computed<Record<string, string>>(() => {
   const map: Record<string, string> = {};
   for (const b of allBangs.value) map[b.t] = b.s;

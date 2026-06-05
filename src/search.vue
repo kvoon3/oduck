@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
-import { bangs } from "@oduck/ui";
 import {
-  type Bang,
   type CustomBang,
   parseCustomBangs,
-  mergeBangs,
 } from "./custom-bang";
 import { BangSearch } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
 
-const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => customBangs.value);
 
 function loadFromStorage(): CustomBang[] {
   const saved = localStorage.getItem("custom-bangs");

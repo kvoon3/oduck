@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { BangManagePanel, bangs, mergeBangs, parseCustomBangs } from "@oduck/ui";
+import { BangManagePanel, parseCustomBangs } from "@oduck/ui";
 import type { CustomBang } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
 
-const allBangs = computed<CustomBang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => customBangs.value);
 
 const resolutions = computed(() => {
   const map: Record<string, string> = {};

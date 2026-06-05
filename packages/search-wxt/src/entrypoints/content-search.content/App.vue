@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { BangSearch, bangs, mergeBangs, parseCustomBangs, type CustomBang, type Bang } from "@oduck/ui";
+import { BangSearch, parseCustomBangs, type CustomBang } from "@oduck/ui";
 
 const visible = ref(false);
 const customBangs = ref<CustomBang[]>([]);
 
-const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => customBangs.value);
 
 const isDark = ref(false);
 
@@ -37,7 +37,7 @@ function onBackdropClick() {
   visible.value = false;
 }
 
-async function loadCustomBangs() {
+function loadCustomBangs() {
   try {
     const saved = localStorage.getItem("custom-bangs");
     if (!saved) return;
@@ -51,7 +51,7 @@ onMounted(() => {
   updateTheme();
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
   document.addEventListener("keydown", onKeydown, true);
-  void loadCustomBangs();
+  loadCustomBangs();
 });
 
 onUnmounted(() => {

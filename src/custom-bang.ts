@@ -1,16 +1,12 @@
-import { bangs } from "@oduck/ui";
-
-export type Bang = (typeof bangs)[number];
+export type { Bang } from "@oduck/ui";
 export type BangOrigin = string;
 
-export type CustomBang = Bang & {
+export type CustomBang = import("@oduck/ui").Bang & {
   enabled?: boolean;
   origin?: BangOrigin;
-  /** Alias target(s). Single string or ordered fallback list. Fields are inherited from the first target that exists. */
   a?: string | string[];
 };
 
-/** Minimal JSON bang input (used during import/parse). All Bang fields are optional when a is set. */
 export interface CustomBangInput {
   t: string;
   c?: string;
@@ -22,7 +18,7 @@ export interface CustomBangInput {
   enabled?: boolean;
   origin?: BangOrigin;
   a?: string | string[];
-};
+}
 
 export const DEFAULT_CUSTOM_BANG_SOURCE_URL = import.meta.env.DEV
   ? "/oduck.json"
@@ -39,71 +35,6 @@ import { toArray } from '@antfu/utils';
 function normalizeA(a: string | string[] | undefined): string[] | undefined {
   const arr = toArray(a).filter(Boolean);
   return arr.length > 0 ? arr.map((v) => v.toLowerCase()) : undefined;
-}
-
-function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[] {
-  const customByTrigger = new Map<string, CustomBang>();
-  for (const b of customBangs) {
-    customByTrigger.set(b.t, b);
-  }
-
-  const builtinByTrigger = new Map<string, Bang>();
-  for (const b of builtinBangs) {
-    builtinByTrigger.set(b.t, b);
-  }
-
-  const seenT = new Set<string>();
-  const resolved: Bang[] = [];
-
-  function resolveSingle(bang: CustomBang, visited: Set<string>): Bang | null {
-    if (visited.has(bang.t)) return null;
-    visited.add(bang.t);
-
-    const aliases = normalizeA(bang.a);
-    if (!aliases || aliases.length === 0) {
-      const { a: _a, ...rest } = bang;
-      return rest as Bang;
-    }
-
-    // Try each alias in order, use the first that resolves
-    for (const alias of aliases) {
-      if (visited.has(alias)) continue;
-
-      const targetCustom = customByTrigger.get(alias);
-      if (targetCustom) {
-        const resolvedTarget = resolveSingle(targetCustom, visited);
-        if (resolvedTarget) return { ...resolvedTarget, t: bang.t };
-        continue;
-      }
-
-      const targetBuiltin = builtinByTrigger.get(alias);
-      if (targetBuiltin) {
-        return { ...targetBuiltin, t: bang.t };
-      }
-    }
-
-    return null;
-  }
-
-  for (const b of customBangs) {
-    const bang = resolveSingle(b, new Set());
-    if (!bang) continue;
-    if (seenT.has(bang.t)) continue;
-    seenT.add(bang.t);
-    resolved.push(bang);
-  }
-
-  for (const b of builtinBangs) {
-    if (seenT.has(b.t)) continue;
-    seenT.add(b.t);
-    resolved.push(b);
-  }
-
-  return resolved;
-}
-
-export function mergeBangs(customBangs: CustomBang[], builtinBangs: Bang[]): CustomBang[] {
-  return resolveAliases(customBangs, builtinBangs) as CustomBang[];
 }
 
 export function parseCustomBangs(value: CustomBangInput[]): CustomBang[] {
