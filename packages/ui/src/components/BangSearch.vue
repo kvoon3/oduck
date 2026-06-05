@@ -23,8 +23,12 @@ type Hint =
   | { type: "bang"; bang: Bang; key: string }
   | { type: "history"; history: SearchHistoryEntry; key: string };
 
+const enabledBangs = computed(() =>
+  props.allBangs.filter((b) => (b as any).enabled !== false),
+);
+
 const fuse = computed(() => {
-  return new Fuse(props.allBangs, {
+  return new Fuse(enabledBangs.value, {
     keys: ["t", "s", "sc"],
     threshold: 0.3,
   });

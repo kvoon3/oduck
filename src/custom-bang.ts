@@ -86,7 +86,6 @@ function resolveAliases(customBangs: CustomBang[], builtinBangs: Bang[]): Bang[]
   }
 
   for (const b of customBangs) {
-    if (b.enabled === false) continue;
     const bang = resolveSingle(b, new Set());
     if (!bang) continue;
     if (seenT.has(bang.t)) continue;
