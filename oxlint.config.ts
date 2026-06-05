@@ -17,6 +17,12 @@ export default defineConfig({
         "import/no-unassigned-import": "off",
       },
     },
+    {
+      files: ["**/*.worker.ts"],
+      rules: {
+        "unicorn/require-post-message-target-origin": "off",
+      },
+    },
   ],
   plugins: ["oxc", "typescript", "unicorn", "import", "vue"],
 });

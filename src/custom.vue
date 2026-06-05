@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, shallowRef } from "vue";
+import { ref, computed, onMounted, onUnmounted, shallowRef, toRaw } from "vue";
 import {
   type CustomBang,
   type CustomBangSource,
-  loadCustomBangsFromUrl,
-  parseCustomBangs,
 } from "./custom-bang";
-import { BangModal, BangManagePanel } from "@oduck/ui";
+import {
+  BangModal,
+  BangManagePanel,
+  useBangProcessor,
+  loadRawBangsFromUrl,
+  parseCustomBangs,
+  type CustomBangInput,
+} from "@oduck/ui";
 import BangAddModal from "./components/BangAddModal.vue";
 import { BangSearch } from "@oduck/ui";
 import BangSourceCards from "./components/BangSourceCards.vue";
@@ -17,6 +22,8 @@ import ExportConfirmModal from "./components/ExportConfirmModal.vue";
 
 const LS_CUSTOM_BANGS = "custom-bangs";
 const LS_CUSTOM_BANG_SOURCES = "custom-bang-sources";
+
+const { process: processBangs } = useBangProcessor();
 
 const customBangs = ref<CustomBang[]>([]);
 const sources = ref<CustomBangSource[]>([]);
@@ -34,7 +41,7 @@ const sourceRemoveVisible = shallowRef(false);
 const selectedBangTags = shallowRef<Set<string>>(new Set());
 
 const sourceConflicts = shallowRef<{ local: CustomBang; remote: CustomBang }[]>([]);
-const pendingImport = shallowRef<{ sourceName: string; sourceUrl: string; nextBangs: CustomBang[]; existingIndex: number } | null>(null);
+const pendingImport = shallowRef<{ sourceName: string; sourceUrl: string; rawBangs: CustomBangInput[]; existingIndex: number } | null>(null);
 
 const importToast = shallowRef<{ type: 'loading' | 'success' | 'error'; message: string } | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -120,18 +127,7 @@ function findSourceIndexByName(name: string): number {
   return sources.value.findIndex((s) => s.name === name);
 }
 
-function dedupeBangs(preferredBangs: CustomBang[], fallbackBangs: CustomBang[] = []): CustomBang[] {
-  const seen = new Set<string>();
-  const result: CustomBang[] = [];
 
-  for (const bang of [...preferredBangs, ...fallbackBangs]) {
-    if (seen.has(bang.u)) continue;
-    seen.add(bang.u);
-    result.push(bang);
-  }
-
-  return result;
-}
 
 function openModal(bang: CustomBang | null = null, index: number | null = null) {
   editingBang.value = bang;
@@ -332,18 +328,36 @@ function hideToast() {
 async function importFromFile(sourceName: string, file: File) {
   showToast('loading', `Importing ${sourceName}...`);
   try {
-    const parsed = parseCustomBangs(JSON.parse(await file.text()));
+    const raw: CustomBangInput[] = JSON.parse(await file.text());
     const existingIndex = findSourceIndexByName(sourceName);
+    const existingSourceTags = existingIndex >= 0 ? toRaw(sources.value[existingIndex].tags) : [];
+
+    const result = await processBangs(
+      raw,
+      sourceName,
+      toRaw(customBangs.value),
+      existingSourceTags,
+      false,
+    );
+
+    if (result.conflicts.length > 0) {
+      pendingImport.value = { sourceName, sourceUrl: "", rawBangs: raw, existingIndex };
+      sourceConflicts.value = result.conflicts;
+      sourceAddModalVisible.value = true;
+      hideToast();
+      return;
+    }
+
     if (existingIndex !== -1) {
       sources.value.splice(existingIndex, 1);
     }
-    sources.value.push({ name: sourceName, url: "", tags: parsed.map((b) => b.t) });
-    customBangs.value = dedupeBangs(parsed.map((b) => { b.origin = sourceName; return b; }));
+    sources.value.push({ name: sourceName, url: "", tags: result.newTags });
+    customBangs.value = result.merged;
     closeModal();
     addModalVisible.value = false;
     saveToStorage();
     saveSourceUrls();
-    showToast('success', `Imported ${sourceName} (${parsed.length} bangs)`);
+    showToast('success', `Imported ${sourceName} (${result.merged.length} bangs)`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to import custom bang config.";
     importError.value = msg;
@@ -351,44 +365,7 @@ async function importFromFile(sourceName: string, file: File) {
   }
 }
 
-function findConflicts(nextBangs: CustomBang[], sourceName: string): { local: CustomBang; remote: CustomBang }[] {
-  const previousTags = new Set(
-    sources.value.find((s) => s.name === sourceName)?.tags ?? [],
-  );
-  const conflicts: { local: CustomBang; remote: CustomBang }[] = [];
-  for (const bang of nextBangs) {
-    const existing = customBangs.value.find((cb) => cb.t === bang.t);
-    if (existing && !previousTags.has(existing.t)) {
-      conflicts.push({ local: existing, remote: bang });
-    }
-  }
-  return conflicts;
-}
 
-function replaceSourceBangs(source: CustomBangSource, nextBangs: CustomBang[], keepRemote = false) {
-  const tagged = nextBangs.map((b) => ({ ...b, origin: source.name }));
-  const previousTags = new Set(source.tags);
-
-  // triggers that conflict with other sources / manual
-  const conflictTriggers = new Set(
-    tagged
-      .filter((t) => customBangs.value.some((cb) => cb.t === t.t && !previousTags.has(cb.t)))
-      .map((t) => t.t),
-  );
-
-  customBangs.value = [
-    ...customBangs.value.filter((bang) => {
-      if (previousTags.has(bang.t)) return false; // remove old source tags
-      if (conflictTriggers.has(bang.t) && keepRemote) return false; // remove conflicting local
-      return true;
-    }),
-    ...tagged.filter((t) => !conflictTriggers.has(t.t) || keepRemote),
-  ];
-
-  source.tags = tagged.map((bang) => bang.t);
-  saveToStorage();
-  saveSourceUrls();
-}
 
 function removeSourceBangs(source: CustomBangSource) {
   const removedTags = new Set(source.tags);
@@ -406,9 +383,19 @@ async function syncSourceAtIndex(index: number) {
   showToast('loading', `Syncing ${source.name}...`);
 
   try {
-    const nextBangs = await loadCustomBangsFromUrl(source.url);
-    replaceSourceBangs(source, nextBangs);
-    showToast('success', `Synced ${source.name} (${nextBangs.length} bangs)`);
+    const raw = await loadRawBangsFromUrl(source.url);
+    const result = await processBangs(
+      raw,
+      source.name,
+      toRaw(customBangs.value),
+      toRaw(source.tags),
+      false,
+    );
+    customBangs.value = result.merged;
+    source.tags = result.newTags;
+    saveToStorage();
+    saveSourceUrls();
+    showToast('success', `Synced ${source.name} (${result.merged.length} bangs)`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to sync custom bang source.";
     importError.value = msg;
@@ -428,13 +415,20 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
   try {
     const trimmed = sourceUrl.trim();
     const existingIndex = findSourceIndexByName(sourceName);
-    const nextBangs = await loadCustomBangsFromUrl(trimmed);
+    const raw = await loadRawBangsFromUrl(trimmed);
 
-    // Detect conflicts with other sources / manual bangs
-    const conflicts = findConflicts(nextBangs, sourceName);
-    if (conflicts.length > 0) {
-      pendingImport.value = { sourceName, sourceUrl: trimmed, nextBangs, existingIndex };
-      sourceConflicts.value = conflicts;
+    const existingSourceTags = existingIndex >= 0 ? toRaw(sources.value[existingIndex].tags) : [];
+    const result = await processBangs(
+      raw,
+      sourceName,
+      toRaw(customBangs.value),
+      existingSourceTags,
+      false,
+    );
+
+    if (result.conflicts.length > 0) {
+      pendingImport.value = { sourceName, sourceUrl: trimmed, rawBangs: raw, existingIndex };
+      sourceConflicts.value = result.conflicts;
       sourceAddModalVisible.value = true;
       importLoading.value = false;
       hideToast();
@@ -442,12 +436,14 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
     }
 
     if (existingIndex === -1) {
-      sources.value.push({ name: sourceName, url: trimmed, tags: [] });
-      replaceSourceBangs(sources.value[sources.value.length - 1]!, nextBangs);
+      sources.value.push({ name: sourceName, url: trimmed, tags: result.newTags });
     } else {
-      replaceSourceBangs(sources.value[existingIndex]!, nextBangs);
+      sources.value[existingIndex].tags = result.newTags;
     }
-    showToast('success', `Imported ${sourceName} (${nextBangs.length} bangs)`);
+    customBangs.value = result.merged;
+    saveToStorage();
+    saveSourceUrls();
+    showToast('success', `Imported ${sourceName} (${result.newTags.length} bangs)`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to import custom bang config.";
     importError.value = msg;
@@ -457,23 +453,41 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
   }
 }
 
-function handleResolveConflicts(resolution: "keep-local" | "keep-remote") {
+async function handleResolveConflicts(resolution: "keep-local" | "keep-remote") {
   const pending = pendingImport.value;
   if (!pending) return;
 
-  const { sourceName, nextBangs, existingIndex } = pending;
+  const { sourceName, rawBangs, existingIndex } = pending;
+  const existingSourceTags = existingIndex >= 0 ? toRaw(sources.value[existingIndex].tags) : [];
 
-  if (existingIndex === -1) {
-    sources.value.push({ name: sourceName, url: pending.sourceUrl, tags: [] });
-    replaceSourceBangs(sources.value[sources.value.length - 1]!, nextBangs, resolution === "keep-remote");
-  } else {
-    replaceSourceBangs(sources.value[existingIndex]!, nextBangs, resolution === "keep-remote");
+  importLoading.value = true;
+  try {
+    const result = await processBangs(
+      rawBangs,
+      sourceName,
+      toRaw(customBangs.value),
+      existingSourceTags,
+      resolution === "keep-remote",
+    );
+
+    if (existingIndex === -1) {
+      sources.value.push({ name: sourceName, url: pending.sourceUrl, tags: result.newTags });
+    } else {
+      sources.value[existingIndex].tags = result.newTags;
+    }
+    customBangs.value = result.merged;
+    saveToStorage();
+    saveSourceUrls();
+    showToast('success', `Imported ${sourceName} (${result.newTags.length} bangs)`);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to resolve conflicts.";
+    showToast('error', msg);
+  } finally {
+    importLoading.value = false;
+    sourceConflicts.value = [];
+    pendingImport.value = null;
+    sourceAddModalVisible.value = false;
   }
-
-  sourceConflicts.value = [];
-  pendingImport.value = null;
-  sourceAddModalVisible.value = false;
-  showToast('success', `Imported ${sourceName} (${nextBangs.length} bangs)`);
 }
 
 async function syncSource(index: number) {

@@ -73,15 +73,16 @@ export function normalizeCustomBangSourceUrl(sourceUrl: string): string {
   return url.toString();
 }
 
-export async function loadCustomBangsFromUrl(sourceUrl: string): Promise<CustomBang[]> {
+export async function loadRawBangsFromUrl(sourceUrl: string): Promise<CustomBangInput[]> {
   const response = await fetch(normalizeCustomBangSourceUrl(sourceUrl), {
     cache: "no-store",
   });
-
   if (!response.ok) {
     throw new Error(`Failed to load JSON source (${response.status}).`);
   }
+  return response.json();
+}
 
-  const bangs: CustomBang[] = await response.json();
-  return parseCustomBangs(bangs);
+export async function loadCustomBangsFromUrl(sourceUrl: string): Promise<CustomBang[]> {
+  return parseCustomBangs(await loadRawBangsFromUrl(sourceUrl));
 }

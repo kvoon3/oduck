@@ -25,10 +25,12 @@ export {
   parseCustomBangs,
   normalizeCustomBangSourceUrl,
   loadCustomBangsFromUrl,
+  loadRawBangsFromUrl,
 } from './types/custom-bang'
 
 // Composables
 export { useBang, type BangMatch } from './composables/useBang'
+export { useBangProcessor } from './composables/useBangProcessor'
 
 // Components
 export { default as BaseModal } from './components/BaseModal.vue'

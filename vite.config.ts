@@ -32,11 +32,6 @@ export default defineConfig({
         custom: resolve(import.meta.dirname, "custom.html"),
         search: resolve(import.meta.dirname, "search.html"),
       },
-      output: {
-        manualChunks(id) {
-          return null;
-        },
-      },
     },
   },
 });
