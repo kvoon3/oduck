@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { bangs, type Bang, mergeBangs, parseCustomBangs } from "@oduck/ui";
+import { BangList, bangs, type Bang, mergeBangs, parseCustomBangs } from "@oduck/ui";
 import type { CustomBang } from "@oduck/ui";
 
 const customBangs = ref<CustomBang[]>([]);
-const searchQuery = ref("");
+const emptySet = new Set<string>();
 
-const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
+const allBangs = computed<CustomBang[]>(() => {
+  const merged = mergeBangs(customBangs.value, bangs);
+  for (const b of merged) {
+    (b as CustomBang).enabled ??= true;
+  }
+  return merged as CustomBang[];
+});
 
-const filteredBangs = computed(() => {
-  if (!searchQuery.value.trim()) return allBangs.value;
-  const q = searchQuery.value.trim().toLowerCase();
-  return allBangs.value.filter((b) =>
-    b.t.toLowerCase().includes(q) ||
-    b.s.toLowerCase().includes(q) ||
-    (b.sc && b.sc.toLowerCase().includes(q))
-  );
+const resolutions = computed(() => {
+  const map: Record<string, string> = {};
+  for (const b of allBangs.value) map[b.t] = b.s;
+  return map;
 });
 
 async function loadCustomBangs() {
@@ -66,38 +68,17 @@ onMounted(() => {
         Bangs
       </h1>
       <span class="ml-auto text-xs text-neutral-400 dark:text-neutral-500">
-        {{ filteredBangs.length }} bangs
+        {{ allBangs.length }} bangs
       </span>
     </div>
 
-    <input
-      v-model="searchQuery"
-      type="text"
-      class="input w-full"
-      placeholder="Search bangs..."
-    />
-
     <div class="max-h-80 overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-md">
-      <ul v-if="filteredBangs.length" class="list-none p-0 m-0">
-        <li
-          v-for="bang in filteredBangs"
-          :key="bang.t"
-          class="flex items-center gap-2 px-3 py-1.5 text-sm border-b border-neutral-100 dark:border-neutral-800 last:border-b-0"
-        >
-          <span class="text-xs text-neutral-500 dark:text-neutral-400 w-16 text-right truncate">
-            {{ bang.sc }}
-          </span>
-          <span class="font-medium text-neutral-800 dark:text-neutral-200">
-            !{{ bang.t }}
-          </span>
-          <span class="text-neutral-500 dark:text-neutral-400 truncate ml-auto text-xs">
-            {{ bang.s }}
-          </span>
-        </li>
-      </ul>
-      <p v-else class="p-4 text-center text-sm text-neutral-400">
-        No bangs match this filter.
-      </p>
+      <BangList
+        :custom-bangs="allBangs"
+        :selected-bang-tags="emptySet"
+        :resolutions="resolutions"
+        height="h-64"
+      />
     </div>
 
     <div class="flex justify-end pt-2 border-t border-neutral-200 dark:border-neutral-700">

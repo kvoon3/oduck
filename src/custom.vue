@@ -488,7 +488,7 @@ onUnmounted(() => {
         <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
           <BangManagePanel
             v-model="selectedBangTags"
-            :custom-bangs="customBangs"
+            :bangs="allBangs"
             :sources="sources"
             :resolutions="resolutions"
             @toggle-enabled="toggleBangEnabled"

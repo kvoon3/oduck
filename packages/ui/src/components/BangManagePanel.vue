@@ -6,7 +6,7 @@ import BangList from "./BangList.vue";
 import BangFilterPopup from "./BangFilterPopup.vue";
 
 const props = defineProps<{
-  customBangs: CustomBang[];
+  bangs: CustomBang[];
   sources: CustomBangSource[];
   resolutions: Record<string, string>;
   modelValue?: Set<string>;
@@ -27,9 +27,11 @@ const selectedBangTags = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-const enabledCount = computed(() => props.customBangs.filter((b) => b.enabled !== false).length);
-const totalCount = computed(() => props.customBangs.length);
-const manualCount = computed(() => props.customBangs.filter((b) => (b.origin ?? "manual") === "manual").length);
+const customBangsOnly = computed(() => props.bangs.filter((b) => b.origin !== undefined));
+
+const enabledCount = computed(() => customBangsOnly.value.filter((b) => b.enabled !== false).length);
+const totalCount = computed(() => customBangsOnly.value.length);
+const manualCount = computed(() => customBangsOnly.value.filter((b) => (b.origin ?? "manual") === "manual").length);
 const filteredEnabledCount = computed(() => filteredBangs.value.filter((b) => b.enabled !== false).length);
 const filteredTotalCount = computed(() => filteredBangs.value.length);
 const allFilteredSelected = computed(() =>
@@ -39,12 +41,12 @@ const allFilteredSelected = computed(() =>
 const sourceCounts = computed(() =>
   props.sources.map((s) => ({
     name: s.name,
-    count: props.customBangs.filter((b) => b.origin === s.name).length,
+    count: customBangsOnly.value.filter((b) => b.origin === s.name).length,
   })),
 );
 
 const filteredBangs = computed(() => {
-  let result = props.customBangs;
+  let result = props.bangs;
   if (filter.value !== null) {
     result = result.filter((b) => b.enabled === filter.value);
   }
@@ -75,13 +77,13 @@ function handleOriginFilterSet(value: null | string) {
 
 function handleToggleEnabled(index: number) {
   const bang = filteredBangs.value[index];
-  if (!bang) return;
+  if (!bang || bang.origin === undefined) return;
   emit("toggleEnabled", bang);
 }
 
 function handleEdit(index: number) {
   const bang = filteredBangs.value[index];
-  if (!bang) return;
+  if (!bang || bang.origin === undefined) return;
   emit("edit", bang);
 }
 
@@ -138,7 +140,7 @@ function handleSelect(index: number) {
     </section>
 
     <p
-      v-if="customBangs.length === 0"
+      v-if="bangs.length === 0"
       class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])"
     >
       No custom bangs yet.
@@ -160,8 +162,8 @@ function handleSelect(index: number) {
         @select="handleSelect"
       />
       <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
-        {{ filteredBangs.length }} of {{ totalCount }}
-        {{ totalCount === 1 ? "bang" : "bangs" }}
+        {{ filteredBangs.length }} of {{ bangs.length }}
+        {{ bangs.length === 1 ? "bang" : "bangs" }}
       </p>
     </template>
   </div>

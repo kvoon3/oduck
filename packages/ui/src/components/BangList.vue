@@ -54,7 +54,7 @@ watch(items, () => {
             : 'text-[#666] dark:text-[#888]'
             ">!{{ item.data.bang.t }}</span>
         </div>
-        <div class="flex gap-1.5">
+        <div v-if="item.data.bang.origin !== undefined" class="flex gap-1.5">
           <button class="btn-secondary btn-sm bg-transparent"
             :class="item.data.bang.enabled === false
               ? 'text-red-400 hover:bg-red-100 hover:text-red-600 dark:(text-red-400 hover:bg-red-900/30 hover:text-red-300)'
