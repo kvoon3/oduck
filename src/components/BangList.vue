@@ -35,7 +35,7 @@ watch(items, () => {
   <div v-bind="containerProps" class="h-120">
     <div v-bind="wrapperProps">
       <div v-for="item in list" :key="item.data.bang.t + '-' + item.index"
-        class="mb1 grid grid-cols-[minmax(0,1fr)_auto] items-center px-3.5 py-1.5 cursor-pointer transition-[background-color,color,box-shadow] duration-150"
+        class="grid grid-cols-[minmax(0,1fr)_auto] items-center px-3.5 py-1.5 cursor-pointer"
         :class="[
           item.data.bang.enabled === false
             ? 'bg-[#f1f1f1] text-[#777] op-65 hover:op-85 dark:bg-[#111]'

@@ -110,13 +110,6 @@ function handleEdit(index: number) {
 function handleSelect(index: number) {
   const bang = filteredBangs.value[index];
   if (!bang) return;
-  const next = new Set(selectedBangTags.value);
-  if (next.has(bang.t)) {
-    next.delete(bang.t);
-  } else {
-    next.add(bang.t);
-  }
-  selectedBangTags.value = next;
   emit("select", bang);
 }
 </script>
