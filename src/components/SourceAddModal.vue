@@ -15,22 +15,31 @@ const conflictMode = computed(() => (props.conflicts?.length ?? 0) > 0);
 const emit = defineEmits<{
   close: [];
   importUrl: [name: string, sourceUrl: string];
-  resolveConflicts: [resolution: "keep-local" | "keep-remote"];
+  resolveConflicts: [resolutions: Record<string, boolean>];
 }>();
 
 const sourceUrl = ref("");
 const sourceName = ref("");
 
-function reset() {
-  sourceUrl.value = "";
-  sourceName.value = "";
-}
+/** Per-item apply: tag → true=apply remote, false=keep local */
+const selectedResolutions = ref<Record<string, boolean>>({});
 
 watch(
   () => props.visible,
-  (v) => {
-    if (v) reset();
+  (visible) => {
+    sourceUrl.value = "";
+    sourceName.value = "";
+    if (visible && props.conflicts && props.conflicts.length > 0) {
+      const map: Record<string, boolean> = {};
+      for (const c of props.conflicts) {
+        map[c.remote.t] = true;
+      }
+      selectedResolutions.value = map;
+    } else {
+      selectedResolutions.value = {};
+    }
   },
+  { immediate: true },
 );
 
 function handleSubmit() {
@@ -39,15 +48,31 @@ function handleSubmit() {
   if (trimmedName && trimmedUrl) emit("importUrl", trimmedName, trimmedUrl);
 }
 
-function handleResolve(resolution: "keep-local" | "keep-remote") {
-  emit("resolveConflicts", resolution);
+function toggleAll() {
+  const allApplied = Object.values(selectedResolutions.value).every(Boolean);
+  const next: Record<string, boolean> = {};
+  for (const c of props.conflicts ?? []) {
+    next[c.remote.t] = !allApplied;
+  }
+  selectedResolutions.value = next;
+}
+
+function confirmResolutions() {
+  emit("resolveConflicts", selectedResolutions.value);
+}
+
+function toggleResolution(tag: string) {
+  selectedResolutions.value = {
+    ...selectedResolutions.value,
+    [tag]: !selectedResolutions.value[tag],
+  };
 }
 </script>
 
 <template>
   <BaseModal
     :visible="visible"
-    :height="conflictMode ? 'min(80vh,480px)' : 'min(80vh,360px)'"
+    :height="conflictMode ? 'min(85vh,520px)' : 'min(80vh,360px)'"
     aria-labelledby="source-add-modal-title"
     @close="$emit('close')"
   >
@@ -100,26 +125,25 @@ function handleResolve(resolution: "keep-local" | "keep-remote") {
       class="overflow-auto min-h-0 px-7 pb-4 lt-sm:px-5 lt-sm:pb-2"
     >
       <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-4 mb-3">
-        Found {{ conflicts?.length ?? 0 }} conflicting bang(s). Choose how to resolve:
+        Found {{ conflicts?.length ?? 0 }} conflicting bang(s). Click to toggle:
       </p>
       <div class="grid gap-2">
-        <div
+        <button
           v-for="(c, i) in conflicts"
           :key="i"
-          class="flex items-center gap-3 text-sm px-3 py-2 rounded-lg border border-dashed border-neutral-200 dark:border-neutral-700"
+          type="button"
+          class="flex items-center gap-1 text-left w-full cursor-pointer bg-transparent border-none rounded-md px-3 py-2 transition whitespace-nowrap overflow-x-auto hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30"
+          :class="selectedResolutions[c.remote.t]
+            ? 'opacity-100'
+            : 'opacity-40'"
+          @click="toggleResolution(c.remote.t)"
         >
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="font-medium">!{{ c.remote.t }}</span>
-              <span class="text-xs text-neutral-500">{{ c.remote.s }}</span>
-            </div>
-            <div class="text-xs text-neutral-400 mt-0.5 truncate">
-              Local: {{ c.local.d }} ({{ c.local.origin || "manual" }})
-              <span class="mx-1">→</span>
-              Remote: {{ c.remote.d }}
-            </div>
-          </div>
-        </div>
+          <span class="font-medium text-sm shrink-0">!{{ c.remote.t }}</span>
+          <span class="text-neutral-400 shrink-0">:</span>
+          <span class="text-xs">{{ c.local.d }}</span>
+          <span class="text-neutral-400 shrink-0">→</span>
+          <span class="text-xs">{{ c.remote.d }}</span>
+        </button>
       </div>
     </div>
 
@@ -137,29 +161,23 @@ function handleResolve(resolution: "keep-local" | "keep-remote") {
           </button>
         </template>
 
-        <!-- Conflict mode: three action buttons -->
+        <!-- Conflict mode: Apply All + Confirm -->
         <template v-else>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-2 gap-2">
             <button
               class="btn-secondary"
               type="button"
-              @click="handleResolve('keep-local')"
+              @click="toggleAll"
             >
-              Keep Local
+              {{ Object.values(selectedResolutions).every(Boolean) ? 'Keep All' : 'Apply All' }}
             </button>
             <button
               class="btn-primary"
               type="button"
-              @click="handleResolve('keep-remote')"
+              :disabled="loading"
+              @click="confirmResolutions"
             >
-              Keep Remote
-            </button>
-            <button
-              class="btn-secondary"
-              type="button"
-              @click="$emit('close')"
-            >
-              Cancel
+              {{ loading ? "Syncing..." : "Confirm" }}
             </button>
           </div>
         </template>

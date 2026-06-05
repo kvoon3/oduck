@@ -453,7 +453,7 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
   }
 }
 
-async function handleResolveConflicts(resolution: "keep-local" | "keep-remote") {
+async function handleResolveConflicts(conflictResolutions: Record<string, boolean>) {
   const pending = pendingImport.value;
   if (!pending) return;
 
@@ -462,23 +462,48 @@ async function handleResolveConflicts(resolution: "keep-local" | "keep-remote") 
 
   importLoading.value = true;
   try {
-    const result = await processBangs(
-      rawBangs,
-      sourceName,
-      toRaw(customBangs.value),
-      existingSourceTags,
-      resolution === "keep-remote",
-    );
+    const parsed = parseCustomBangs(rawBangs).map((b) => Object.assign({}, b, { origin: sourceName }));
+    const existingBangs = toRaw(customBangs.value);
+    const newTagsSet = new Set(parsed.map((b) => b.t));
+    const previousTags = new Set(existingSourceTags);
+
+    // Build merged array based on per-item resolutions
+    // true = apply remote (replace), false = keep local
+    const merged: CustomBang[] = [
+      // Keep existing bangs:
+      // 1. Not in new tags → keep
+      // 2. In previous source tags → remove (will be replaced)
+      // 3. In conflict tags:
+      //    - resolution === false (keep local) → keep
+      //    - resolution === true (apply remote) → remove
+      ...existingBangs.filter((bang) => {
+        if (!newTagsSet.has(bang.t)) return true;
+        if (previousTags.has(bang.t)) return false;
+        // It's a conflict
+        return conflictResolutions[bang.t] !== true;
+      }),
+      // Add parsed bangs:
+      // 1. Not a conflict (new tag) → add
+      // 2. Conflict with resolution === true (apply remote) → add
+      // 3. In previous source tags → add (replace old)
+      ...parsed.filter((bang) => {
+        if (previousTags.has(bang.t)) return true;
+        if (!existingBangs.some((e) => e.t === bang.t)) return true;
+        return conflictResolutions[bang.t] === true;
+      }),
+    ];
+
+    const newTags = Array.from(newTagsSet);
 
     if (existingIndex === -1) {
-      sources.value.push({ name: sourceName, url: pending.sourceUrl, tags: result.newTags });
+      sources.value.push({ name: sourceName, url: pending.sourceUrl, tags: newTags });
     } else {
-      sources.value[existingIndex].tags = result.newTags;
+      sources.value[existingIndex].tags = newTags;
     }
-    customBangs.value = result.merged;
+    customBangs.value = merged;
     saveToStorage();
     saveSourceUrls();
-    showToast('success', `Imported ${sourceName} (${result.newTags.length} bangs)`);
+    showToast('success', `Imported ${sourceName} (${newTags.length} bangs)`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to resolve conflicts.";
     showToast('error', msg);
@@ -690,7 +715,7 @@ onUnmounted(() => {
       >
         <span
           v-if="importToast.type === 'loading'"
-          class="i-ph-spinner animate-spin text-base"
+          class="i-svg-spinners-180-ring text-base"
           aria-hidden="true"
         />
         <span

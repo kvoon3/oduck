@@ -20,6 +20,7 @@
     "@iconify-json/carbon": "catalog:cli",
     "@iconify-json/ph": "catalog:cli",
     "@iconify-json/simple-icons": "catalog:cli",
+    "@iconify-json/svg-spinners": "catalog:cli",
     "@types/node": "catalog:types",
     "nano-staged": "catalog:cli",
     "oxlint": "catalog:cli",
