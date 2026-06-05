@@ -59,6 +59,14 @@ watch(items, () => {
           <span class="text-xs text-neutral-500 dark:text-neutral-400 truncate">
             {{ item.data.bang.d }}
           </span>
+          <span
+            class="text-[10px] px-1.5 py-0.5 rounded-full shrink-0 truncate max-w-24"
+            :class="item.data.bang.origin
+              ? 'bg-blue-100 text-blue-600 dark:(bg-blue-900/30 text-blue-300)'
+              : 'bg-neutral-200 text-neutral-500 dark:(bg-neutral-700 text-neutral-400)'"
+          >
+            {{ item.data.bang.origin || 'manual' }}
+          </span>
         </div>
         <div v-if="showActions && item.data.bang.origin !== undefined" class="flex gap-1.5">
           <button class="btn-secondary btn-sm bg-transparent"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef } from "vue";
+import { ref, computed, shallowRef, watch } from "vue";
 import Fuse from "fuse.js";
+import { useDebounceFn } from "@vueuse/core";
 import type { CustomBang, CustomBangSource } from "../types/custom-bang";
 import BangList from "./BangList.vue";
 import BangFilterPopup from "./BangFilterPopup.vue";
@@ -21,12 +22,19 @@ const emit = defineEmits<{
 }>();
 
 const searchQuery = ref("");
+const debouncedQuery = ref("");
 const filter = shallowRef<null | boolean>(null);
 const originFilter = shallowRef<null | string>(null);
 const selectedBangTags = computed({
   get: () => props.modelValue ?? new Set(),
   set: (v) => emit("update:modelValue", v),
 });
+
+// Debounce search input (150ms feels responsive without excessive recomputation)
+const debounceSearch = useDebounceFn((q: string) => {
+  debouncedQuery.value = q;
+}, 150);
+watch(searchQuery, (q) => debounceSearch(q), { immediate: true });
 
 const customBangsOnly = computed(() => props.bangs.filter((b) => b.origin !== undefined));
 
@@ -46,7 +54,8 @@ const sourceCounts = computed(() =>
   })),
 );
 
-const filteredBangs = computed(() => {
+// Step 1: filter by enabled/origin (cheap, O(n))
+const filteredByMeta = computed(() => {
   let result = props.bangs;
   if (filter.value !== null) {
     result = result.filter((b) => b.enabled === filter.value);
@@ -58,14 +67,24 @@ const filteredBangs = computed(() => {
       result = result.filter((b) => b.origin === originFilter.value);
     }
   }
-  if (searchQuery.value.trim()) {
-    const fuse = new Fuse(result, {
-      keys: ["t", "s", "sc"],
-      threshold: 0.3,
-    });
-    result = fuse.search(searchQuery.value.trim()).map((r) => r.item);
-  }
   return result;
+});
+
+// Step 2: cache Fuse index on the meta-filtered list (expensive, but only when filteredByMeta changes)
+const fuseRef = shallowRef<Fuse<CustomBang> | null>(null);
+watch(filteredByMeta, (list) => {
+  fuseRef.value = new Fuse(list, {
+    keys: ["t", "s", "sc"],
+    threshold: 0.3,
+  });
+}, { immediate: true });
+
+// Step 3: apply debounced text search using cached Fuse (cheap, O(search_result_count))
+const filteredBangs = computed(() => {
+  const list = filteredByMeta.value;
+  const query = debouncedQuery.value.trim();
+  if (!query || !fuseRef.value) return list;
+  return fuseRef.value.search(query).map((r) => r.item);
 });
 
 function handleFilterSet(value: null | boolean) {

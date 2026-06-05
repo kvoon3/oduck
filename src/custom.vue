@@ -33,6 +33,12 @@ const sourceRemoveIndex = shallowRef<number | null>(null);
 const sourceRemoveVisible = shallowRef(false);
 const selectedBangTags = shallowRef<Set<string>>(new Set());
 
+const sourceConflicts = shallowRef<{ local: CustomBang; remote: CustomBang }[]>([]);
+const pendingImport = shallowRef<{ sourceName: string; sourceUrl: string; nextBangs: CustomBang[]; existingIndex: number } | null>(null);
+
+const importToast = shallowRef<{ type: 'loading' | 'success' | 'error'; message: string } | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
 const cleanConfirmVisible = shallowRef(false);
 const exportConfirmVisible = shallowRef(false);
 
@@ -294,7 +300,6 @@ function handleAdd() {
 }
 
 function closeAddModal() {
-  if (importLoading.value) return;
   addModalVisible.value = false;
   importError.value = "";
 }
@@ -305,12 +310,27 @@ function openSourceAddModal() {
 }
 
 function closeSourceAddModal() {
-  if (importLoading.value) return;
   sourceAddModalVisible.value = false;
+  sourceConflicts.value = [];
+  pendingImport.value = null;
   importError.value = "";
 }
 
+function showToast(type: 'loading' | 'success' | 'error', message: string) {
+  if (toastTimer) clearTimeout(toastTimer);
+  importToast.value = { type, message };
+  if (type !== 'loading') {
+    toastTimer = setTimeout(() => { importToast.value = null; }, 3000);
+  }
+}
+
+function hideToast() {
+  if (toastTimer) clearTimeout(toastTimer);
+  importToast.value = null;
+}
+
 async function importFromFile(sourceName: string, file: File) {
+  showToast('loading', `Importing ${sourceName}...`);
   try {
     const parsed = parseCustomBangs(JSON.parse(await file.text()));
     const existingIndex = findSourceIndexByName(sourceName);
@@ -323,19 +343,48 @@ async function importFromFile(sourceName: string, file: File) {
     addModalVisible.value = false;
     saveToStorage();
     saveSourceUrls();
+    showToast('success', `Imported ${sourceName} (${parsed.length} bangs)`);
   } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : "Failed to import custom bang config.";
+    const msg = error instanceof Error ? error.message : "Failed to import custom bang config.";
+    importError.value = msg;
+    showToast('error', msg);
   }
 }
 
-function replaceSourceBangs(source: CustomBangSource, nextBangs: CustomBang[]) {
+function findConflicts(nextBangs: CustomBang[], sourceName: string): { local: CustomBang; remote: CustomBang }[] {
+  const previousTags = new Set(
+    sources.value.find((s) => s.name === sourceName)?.tags ?? [],
+  );
+  const conflicts: { local: CustomBang; remote: CustomBang }[] = [];
+  for (const bang of nextBangs) {
+    const existing = customBangs.value.find((cb) => cb.t === bang.t);
+    if (existing && !previousTags.has(existing.t)) {
+      conflicts.push({ local: existing, remote: bang });
+    }
+  }
+  return conflicts;
+}
+
+function replaceSourceBangs(source: CustomBangSource, nextBangs: CustomBang[], keepRemote = false) {
   const tagged = nextBangs.map((b) => ({ ...b, origin: source.name }));
   const previousTags = new Set(source.tags);
-  customBangs.value = dedupeBangs([
-    ...customBangs.value.filter((bang) => !previousTags.has(bang.t)),
-    ...tagged,
-  ]);
+
+  // triggers that conflict with other sources / manual
+  const conflictTriggers = new Set(
+    tagged
+      .filter((t) => customBangs.value.some((cb) => cb.t === t.t && !previousTags.has(cb.t)))
+      .map((t) => t.t),
+  );
+
+  customBangs.value = [
+    ...customBangs.value.filter((bang) => {
+      if (previousTags.has(bang.t)) return false; // remove old source tags
+      if (conflictTriggers.has(bang.t) && keepRemote) return false; // remove conflicting local
+      return true;
+    }),
+    ...tagged.filter((t) => !conflictTriggers.has(t.t) || keepRemote),
+  ];
+
   source.tags = tagged.map((bang) => bang.t);
   saveToStorage();
   saveSourceUrls();
@@ -351,16 +400,22 @@ async function syncSourceAtIndex(index: number) {
   const source = sources.value[index];
   if (!source) return;
 
+  importLoading.value = true;
   syncingSourceIndex.value = index;
   importError.value = "";
+  showToast('loading', `Syncing ${source.name}...`);
 
   try {
-    replaceSourceBangs(source, await loadCustomBangsFromUrl(source.url));
+    const nextBangs = await loadCustomBangsFromUrl(source.url);
+    replaceSourceBangs(source, nextBangs);
+    showToast('success', `Synced ${source.name} (${nextBangs.length} bangs)`);
   } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : "Failed to sync custom bang source.";
+    const msg = error instanceof Error ? error.message : "Failed to sync custom bang source.";
+    importError.value = msg;
+    showToast('error', msg);
     addModalVisible.value = true;
   } finally {
+    importLoading.value = false;
     syncingSourceIndex.value = null;
   }
 }
@@ -368,11 +423,23 @@ async function syncSourceAtIndex(index: number) {
 async function importFromUrl(sourceName: string, sourceUrl: string) {
   importLoading.value = true;
   importError.value = "";
+  showToast('loading', `Importing ${sourceName}...`);
 
   try {
     const trimmed = sourceUrl.trim();
     const existingIndex = findSourceIndexByName(sourceName);
     const nextBangs = await loadCustomBangsFromUrl(trimmed);
+
+    // Detect conflicts with other sources / manual bangs
+    const conflicts = findConflicts(nextBangs, sourceName);
+    if (conflicts.length > 0) {
+      pendingImport.value = { sourceName, sourceUrl: trimmed, nextBangs, existingIndex };
+      sourceConflicts.value = conflicts;
+      sourceAddModalVisible.value = true;
+      importLoading.value = false;
+      hideToast();
+      return;
+    }
 
     if (existingIndex === -1) {
       sources.value.push({ name: sourceName, url: trimmed, tags: [] });
@@ -380,12 +447,33 @@ async function importFromUrl(sourceName: string, sourceUrl: string) {
     } else {
       replaceSourceBangs(sources.value[existingIndex]!, nextBangs);
     }
+    showToast('success', `Imported ${sourceName} (${nextBangs.length} bangs)`);
   } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : "Failed to import custom bang config.";
+    const msg = error instanceof Error ? error.message : "Failed to import custom bang config.";
+    importError.value = msg;
+    showToast('error', msg);
   } finally {
     importLoading.value = false;
   }
+}
+
+function handleResolveConflicts(resolution: "keep-local" | "keep-remote") {
+  const pending = pendingImport.value;
+  if (!pending) return;
+
+  const { sourceName, nextBangs, existingIndex } = pending;
+
+  if (existingIndex === -1) {
+    sources.value.push({ name: sourceName, url: pending.sourceUrl, tags: [] });
+    replaceSourceBangs(sources.value[sources.value.length - 1]!, nextBangs, resolution === "keep-remote");
+  } else {
+    replaceSourceBangs(sources.value[existingIndex]!, nextBangs, resolution === "keep-remote");
+  }
+
+  sourceConflicts.value = [];
+  pendingImport.value = null;
+  sourceAddModalVisible.value = false;
+  showToast('success', `Imported ${sourceName} (${nextBangs.length} bangs)`);
 }
 
 async function syncSource(index: number) {
@@ -469,28 +557,35 @@ onUnmounted(() => {
           <div class="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
         </div>
 
-        <BangSourceCards
-          :sources="sources"
-          :loading="importLoading"
-          :syncing-source-index="syncingSourceIndex"
-          class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500"
-          @add-recommended="importFromUrl"
-          @add-custom-source="openSourceAddModal"
-          @sync-source="syncSource"
-          @remove-source="requestRemoveSource"
-        />
+        <div class="relative">
+          <!-- Loading overlay -->
+          <div
+            v-if="importLoading"
+            class="absolute inset-0 z-10 backdrop-blur-sm bg-white/40 dark:bg-black/40 pointer-events-auto cursor-not-allowed"
+          />
 
-        <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
-          <BangManagePanel
-            v-model="selectedBangTags"
-            :bangs="allBangs"
+          <BangSourceCards
             :sources="sources"
-            :resolutions="resolutions"
-            show-actions
-            @toggle-enabled="toggleBangEnabled"
-            @edit="handleEdit"
-            @select="handleSelectBang"
-          >
+            :loading="importLoading"
+            :syncing-source-index="syncingSourceIndex"
+            class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500"
+            @add-recommended="importFromUrl"
+            @add-custom-source="openSourceAddModal"
+            @sync-source="syncSource"
+            @remove-source="requestRemoveSource"
+          />
+
+          <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
+            <BangManagePanel
+              v-model="selectedBangTags"
+              :bangs="allBangs"
+              :sources="sources"
+              :resolutions="resolutions"
+              show-actions
+              @toggle-enabled="toggleBangEnabled"
+              @edit="handleEdit"
+              @select="handleSelectBang"
+            >
             <template #actions="{ filteredBangs, allFilteredSelected, filteredEnabledCount, filteredTotalCount, totalCount }"
             >
               <section class="flex gap-2">
@@ -529,14 +624,21 @@ onUnmounted(() => {
             </template>
           </BangManagePanel>
         </section>
+        </div>
 
-      </div>
       <BangAddModal :visible="addModalVisible" :error="importError" :loading="importLoading"
         @close="closeAddModal" @add-bang="handleAddBangSubmit"
         @import-file="importFromFile" />
 
-      <SourceAddModal :visible="sourceAddModalVisible" :error="importError" :loading="importLoading"
-        @close="closeSourceAddModal" @import-url="importFromUrl" />
+      <SourceAddModal
+        :visible="sourceAddModalVisible"
+        :error="importError"
+        :loading="importLoading"
+        :conflicts="sourceConflicts"
+        @close="closeSourceAddModal"
+        @import-url="importFromUrl"
+        @resolve-conflicts="handleResolveConflicts"
+      />
 
       <BangModal :visible="modalVisible" :editing-bang="editingBang" @submit="handleModalSubmit" @close="closeModal" />
 
@@ -551,6 +653,44 @@ onUnmounted(() => {
         @close="closeExportConfirm" @confirm="confirmExport" />
     </div>
     </div>
+    </div>
     <oduck-footer />
+
+    <!-- Floating import process panel -->
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="translate-y-4 opacity-0"
+      enter-to-class="translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="translate-y-0 opacity-100"
+      leave-to-class="translate-y-4 opacity-0"
+    >
+      <div
+        v-if="importToast"
+        class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium"
+        :class="{
+          'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900': importToast.type === 'loading',
+          'bg-green-600 text-white': importToast.type === 'success',
+          'bg-red-600 text-white': importToast.type === 'error',
+        }"
+      >
+        <span
+          v-if="importToast.type === 'loading'"
+          class="i-ph-spinner animate-spin text-base"
+          aria-hidden="true"
+        />
+        <span
+          v-else-if="importToast.type === 'success'"
+          class="i-ph-check-circle text-base"
+          aria-hidden="true"
+        />
+        <span
+          v-else-if="importToast.type === 'error'"
+          class="i-ph-warning-circle text-base"
+          aria-hidden="true"
+        />
+        {{ importToast.message }}
+      </div>
+    </transition>
   </div>
 </template>
