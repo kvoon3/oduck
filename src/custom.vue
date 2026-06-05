@@ -11,11 +11,9 @@ import {
   parseCustomBangs,
   mergeBangs,
 } from "./custom-bang";
-import { BangModal } from "@oduck/ui";
+import { BangModal, BangManagePanel } from "@oduck/ui";
 import BangAddModal from "./components/BangAddModal.vue";
 import { BangSearch } from "@oduck/ui";
-import BangList from "./components/BangList.vue";
-import BangFilterPopup from "./components/BangFilterPopup.vue";
 import BangSourceCards from "./components/BangSourceCards.vue";
 import SourceAddModal from "./components/SourceAddModal.vue";
 import SourceRemoveConfirmModal from "./components/SourceRemoveConfirmModal.vue";
@@ -43,51 +41,11 @@ const selectedBangTags = shallowRef<Set<string>>(new Set());
 const cleanConfirmVisible = shallowRef(false);
 const exportConfirmVisible = shallowRef(false);
 
-const filter = ref<null | boolean>(null);
-const originFilter = ref<null | BangOrigin>(null);
-const searchQuery = ref("");
-
 const removingSource = computed<CustomBangSource | null>(() => {
   return sourceRemoveIndex.value !== null ? (sources.value[sourceRemoveIndex.value] ?? null) : null;
 });
-const filteredCustomBangs = computed(() => {
-  let result = customBangs.value;
-  if (filter.value !== null) {
-    result = result.filter((b) => b.enabled === filter.value);
-  }
-  if (originFilter.value !== null) {
-    if (originFilter.value === "manual") {
-      result = result.filter((b) => (b.origin ?? "manual") === "manual");
-    } else {
-      result = result.filter((b) => b.origin === originFilter.value);
-    }
-  }
-  if (searchQuery.value.trim()) {
-    const fuse = new Fuse(result, {
-      keys: ["t", "s", "sc"],
-      threshold: 0.3,
-    });
-    result = fuse.search(searchQuery.value.trim()).map((r) => r.item);
-  }
-  return result;
-});
-const enabledCount = computed(() => customBangs.value.filter((b) => b.enabled !== false).length);
-const totalCount = computed(() => customBangs.value.length);
-const manualCount = computed(() => customBangs.value.filter((b) => (b.origin ?? "manual") === "manual").length);
-const sourceCounts = computed(() =>
-  sources.value.map((s) => ({
-    name: s.name,
-    count: customBangs.value.filter((b) => b.origin === s.name).length,
-  })),
-);
-const filteredEnabledCount = computed(() => filteredCustomBangs.value.filter((b) => b.enabled !== false).length);
-const filteredTotalCount = computed(() => filteredCustomBangs.value.length);
 const selectedBangs = computed(() => customBangs.value.filter((bang) => selectedBangTags.value.has(bang.t)));
 const selectedCount = computed(() => selectedBangs.value.length);
-const allFilteredSelected = computed(() =>
-  filteredCustomBangs.value.length > 0 &&
-  filteredCustomBangs.value.every((b) => selectedBangTags.value.has(b.t)),
-);
 const selectedEnabledBangs = computed(() => selectedBangs.value.filter((bang) => bang.enabled !== false));
 const cleanCount = computed(() => selectedCount.value || customBangs.value.length);
 const allBangs = computed<Bang[]>(() => mergeBangs(customBangs.value, bangs));
@@ -203,41 +161,33 @@ function toggleSelectedBang(tag: string) {
   selectedBangTags.value = next;
 }
 
-function handleSelectBang(index: number) {
-  const bang = filteredCustomBangs.value[index];
-  if (!bang) return;
+function handleSelectBang(bang: CustomBang) {
   toggleSelectedBang(bang.t);
 }
 
-function handleToggleSelectAll() {
-  if (allFilteredSelected.value) {
-    // Deselect all filtered bangs
+function handleToggleSelectAll(filteredBangs: CustomBang[], allSelected: boolean) {
+  if (allSelected) {
     const next = new Set(selectedBangTags.value);
-    for (const bang of filteredCustomBangs.value) {
+    for (const bang of filteredBangs) {
       next.delete(bang.t);
     }
     selectedBangTags.value = next;
   } else {
-    // Select all filtered bangs
     const next = new Set(selectedBangTags.value);
-    for (const bang of filteredCustomBangs.value) {
+    for (const bang of filteredBangs) {
       next.add(bang.t);
     }
     selectedBangTags.value = next;
   }
 }
 
-function toggleBangEnabled(index: number) {
-  const bang = filteredCustomBangs.value[index];
-  if (!bang) return;
+function toggleBangEnabled(bang: CustomBang) {
   const realIdx = customBangs.value.findIndex((b) => b.t === bang.t);
   if (realIdx === -1) return;
   handleToggle(realIdx, bang.enabled === false);
 }
 
-function handleEdit(index: number) {
-  const bang = filteredCustomBangs.value[index];
-  if (!bang) return;
+function handleEdit(bang: CustomBang) {
   openModal({ ...bang }, customBangs.value.findIndex((b) => b.t === bang.t));
 }
 
@@ -327,27 +277,17 @@ function confirmClean() {
   closeCleanConfirm();
 }
 
-function handleFilterSet(value: null | boolean) {
-  filter.value = value;
-}
-
-function handleOriginFilterSet(value: null | BangOrigin) {
-  originFilter.value = value;
-}
-
-function handleEnableAll() {
-  const targets =
-    filter.value !== null ? filteredCustomBangs.value : customBangs.value;
-  for (const bang of targets) {
+function handleEnableAll(targets?: CustomBang[]) {
+  const items = targets ?? customBangs.value;
+  for (const bang of items) {
     bang.enabled = true;
   }
   saveToStorage();
 }
 
-function handleDisableAll() {
-  const targets =
-    filter.value !== null ? filteredCustomBangs.value : customBangs.value;
-  for (const bang of targets) {
+function handleDisableAll(targets?: CustomBang[]) {
+  const items = targets ?? customBangs.value;
+  for (const bang of items) {
     bang.enabled = false;
   }
   saveToStorage();
@@ -546,67 +486,52 @@ onUnmounted(() => {
         />
 
         <section class="peer-hover/hide:op-20 peer-hover/hide:blur-sm transition duration-500">
-          <section class="flex justify-between items-center gap-2 mb4">
-            <div class="relative my-2 flex-1">
-              <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
-                <BangFilterPopup :filter="filter" :origin-filter="originFilter" :all-count="totalCount"
-                  :enabled-count="enabledCount" :disabled-count="totalCount - enabledCount" :manual-count="manualCount"
-                  :sources="sources" :source-counts="sourceCounts" @set-filter="handleFilterSet"
-                  @set-origin-filter="handleOriginFilterSet" />
-              </div>
-              <input v-model="searchQuery" class="input pl-11" type="text" placeholder="Search your bangs..." />
-
-            </div>
-
-            <section class="flex gap-2">
-              <button class="btn-primary btn-square text-xl" type="button" title="Add" aria-label="Add" @click="handleAdd">
-                <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
-              </button>
-              <button class="btn-secondary btn-square text-xl" type="button" title="Export" aria-label="Export"
-                :disabled="!selectedEnabledBangs.length" @click="openExportConfirm">
-                <span class="i-ph-export-duotone" aria-hidden="true" />
-              </button>
-              <button class="btn-secondary btn-square text-xl" type="button"
-                :title="allFilteredSelected ? 'Deselect all' : 'Select all'"
-                :aria-label="allFilteredSelected ? 'Deselect all' : 'Select all'"
-                :disabled="!filteredCustomBangs.length"
-                @click="handleToggleSelectAll">
-                <span
-                  :class="allFilteredSelected ? 'i-ph-check-square-duotone' : 'i-ph-check-square-offset-duotone'"
-                  aria-hidden="true" />
-              </button>
-              <button class="btn-secondary btn-square text-xl" type="button"
-                :title="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
-                :aria-label="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
-                :disabled="!customBangs.length"
-                @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll() : handleEnableAll()">
-                <span
-                  :class="filteredEnabledCount === filteredTotalCount ? 'i-ph-toggle-right-duotone' : 'i-ph-toggle-left-duotone'"
-                  aria-hidden="true" />
-              </button>
-              <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
-                :disabled="!customBangs.length" @click="openCleanConfirm">
-                <span class="i-ph-broom-duotone" aria-hidden="true" />
-              </button>
-            </section>
-          </section>
-
-          <p v-if="customBangs.length === 0"
-            class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
-            No custom bangs yet.
-          </p>
-          <template v-else>
-            <p v-if="filteredCustomBangs.length === 0"
-              class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa])">
-              No bangs match this filter.
-            </p>
-            <BangList v-else :custom-bangs="filteredCustomBangs" :resolutions="resolutions" :selected-bang-tags="selectedBangTags"
-              @select="handleSelectBang" @toggle-enabled="toggleBangEnabled" @edit="handleEdit" />
-            <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
-              {{ filteredCustomBangs.length }} of {{ totalCount }}
-              {{ totalCount === 1 ? 'bang' : 'bangs' }}
-            </p>
-          </template>
+          <BangManagePanel
+            v-model="selectedBangTags"
+            :custom-bangs="customBangs"
+            :sources="sources"
+            :resolutions="resolutions"
+            @toggle-enabled="toggleBangEnabled"
+            @edit="handleEdit"
+            @select="handleSelectBang"
+          >
+            <template #actions="{ filteredBangs, allFilteredSelected, filteredEnabledCount, filteredTotalCount, totalCount }"
+            >
+              <section class="flex gap-2">
+                <button class="btn-primary btn-square text-xl" type="button" title="Add" aria-label="Add" @click="handleAdd">
+                  <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
+                </button>
+                <button class="btn-secondary btn-square text-xl" type="button" title="Export" aria-label="Export"
+                  :disabled="!selectedEnabledBangs.length" @click="openExportConfirm">
+                  <span class="i-ph-export-duotone" aria-hidden="true" />
+                </button>
+                <button class="btn-secondary btn-square text-xl" type="button"
+                  :title="allFilteredSelected ? 'Deselect all' : 'Select all'"
+                  :aria-label="allFilteredSelected ? 'Deselect all' : 'Select all'"
+                  :disabled="!filteredBangs.length"
+                  @click="handleToggleSelectAll(filteredBangs, allFilteredSelected)"
+                >
+                  <span
+                    :class="allFilteredSelected ? 'i-ph-check-square-duotone' : 'i-ph-check-square-offset-duotone'"
+                    aria-hidden="true" />
+                </button>
+                <button class="btn-secondary btn-square text-xl" type="button"
+                  :title="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
+                  :aria-label="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
+                  :disabled="!totalCount"
+                  @click="filteredEnabledCount === filteredTotalCount ? handleDisableAll(filteredBangs) : handleEnableAll(filteredBangs)"
+                >
+                  <span
+                    :class="filteredEnabledCount === filteredTotalCount ? 'i-ph-toggle-right-duotone' : 'i-ph-toggle-left-duotone'"
+                    aria-hidden="true" />
+                </button>
+                <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
+                  :disabled="!totalCount" @click="openCleanConfirm">
+                  <span class="i-ph-broom-duotone" aria-hidden="true" />
+                </button>
+              </section>
+            </template>
+          </BangManagePanel>
         </section>
 
       </div>
