@@ -7,8 +7,7 @@
     "dev": "wxt",
     "build": "wxt build",
     "zip": "wxt zip",
-    "lint": "oxlint",
-    "typecheck": "vue-tsc --noEmit"
+    "lint": "oxlint"
   },
   "dependencies": {
     "@oduck/ui": "workspace:*",
@@ -21,7 +20,6 @@
     "oxlint": "catalog:cli",
     "typescript": "catalog:cli",
     "unocss": "catalog:",
-    "vue-tsc": "catalog:cli",
     "wxt": "^0.20.26"
   }
 }

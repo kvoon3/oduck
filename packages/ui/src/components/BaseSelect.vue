@@ -113,7 +113,7 @@ onClickOutside(rootRef, () => {
         role="listbox" :aria-label="ariaLabel" @keydown="onListKeydown">
         <li v-for="(option, index) in options" :key="option.value" :ref="(element) => setOptionRef(element, index)"
           class="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-sm outline-none transition duration-150"
-          :class="option.value === modelValue ? 'bg-neutral-200 text-neutral-950 dark:bg-neutral-700 dark:text-neutral-50' : 'text-neutral-700 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-800'"
+          :class="option.value === modelValue ? 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' : 'text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800/60'"
           role="option" :aria-selected="option.value === modelValue" tabindex="-1" @click="selectOption(option)"
           @mouseenter="activeIndex = index">
           <span v-if="option.icon" class="text-[16px] shrink-0" :class="option.icon" aria-hidden="true"></span>

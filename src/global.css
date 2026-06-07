@@ -37,18 +37,18 @@ body {
 
 /* Popup surface: shared background + shadow for dropdown/popover panels */
 .popup-surface {
-  background: #f5f5f5;
+  background: #fafafa;
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    0 10px 15px -3px rgba(0, 0, 0, 0.06),
+    0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
   .popup-surface {
-    background: #191919;
+    background: #111;
     box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.3),
-      0 4px 6px -4px rgba(0, 0, 0, 0.3);
+      0 10px 15px -3px rgba(0, 0, 0, 0.2),
+      0 4px 6px -4px rgba(0, 0, 0, 0.15);
   }
 }
 

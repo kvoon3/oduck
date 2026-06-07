@@ -12,8 +12,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "lint": "oxlint",
-    "typecheck": "vue-tsc --noEmit"
+    "lint": "oxlint"
   },
   "dependencies": {
     "@antfu/utils": "catalog:inlined",
@@ -27,8 +26,7 @@
     "@vitejs/plugin-vue": "catalog:cli",
     "oxlint": "catalog:cli",
     "tsdown": "catalog:cli",
-    "typescript": "catalog:cli",
-    "vue-tsc": "catalog:cli"
+    "typescript": "catalog:cli"
   },
   "publishConfig": {
     "exports": {

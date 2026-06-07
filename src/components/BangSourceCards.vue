@@ -91,7 +91,15 @@ const cards = computed<SourceCard[]>(() => {
           <span class="i-ph-x-bold text-xs" />
         </button>
 
-        <div :class="card.icon" class="text-2xl mt-1" />
+        <a
+          :href="card.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          :class="card.icon"
+          class="text-2xl mt-1 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+          title="Open source link"
+          @click.stop
+        />
         <span class="text-xs font-medium">{{ card.name }}</span>
 
         <span
@@ -119,17 +127,6 @@ const cards = computed<SourceCard[]>(() => {
               aria-hidden="true"
             />
           </button>
-
-          <a
-            :href="card.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="size-6 flex items-center justify-center rounded p-0 opacity-60 hover:opacity-100 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300 transition-all bg-neutral-100/60 dark:bg-neutral-800/40 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-            title="Open link"
-            @click.stop
-          >
-            <span class="i-ph-link-duotone text-sm" />
-          </a>
         </div>
         <div v-else class="flex items-center gap-1 mt-1">
           <button
@@ -140,17 +137,6 @@ const cards = computed<SourceCard[]>(() => {
           >
             <span class="i-ph-plus-bold" aria-hidden="true" />
           </button>
-
-          <a
-            :href="card.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="size-6 flex items-center justify-center rounded p-0 opacity-60 hover:opacity-100 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300 transition-all bg-neutral-100/60 dark:bg-neutral-800/40 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-            title="Open link"
-            @click.stop
-          >
-            <span class="i-ph-link-duotone text-sm" />
-          </a>
         </div>
       </div>
 

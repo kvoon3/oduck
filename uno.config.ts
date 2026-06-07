@@ -49,7 +49,7 @@ export default defineConfig({
     'link': 'border-0 border-b border-solid border-current pb-0.5 text-[#444] no-underline op-75 transition-opacity duration-150 dark:text-[#a9a9a9]',
     'link-active': 'hover:op-100',
     // Inputs
-    'input': 'box-border w-full min-w-0 border rounded-md bg-[#f5f5f5] px-3 py-2 text-base text-[#1a1a1a] outline-none transition duration-150 placeholder:text-[#777] dark:(bg-[#191919] text-white placeholder:text-[#777])',
+    'input': 'box-border w-full min-w-0 border border-solid border-[#e5e5e5] dark:border-[#27272a] rounded-md bg-[#fafafa] px-3 py-2 text-base text-neutral-600 outline-none transition duration-150 placeholder:text-neutral-400 dark:(bg-[#111] text-neutral-300 placeholder:text-neutral-600)',
     'checkbox': 'size-4 cursor-pointer accent-neutral-600 dark:accent-neutral-400',
     // Utilities
     'border': 'border border-solid border-[#ddd] dark:border-[#3d3d3d]',

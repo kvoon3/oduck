@@ -645,14 +645,14 @@ onUnmounted(() => {
             <template #actions="{ filteredBangs, allFilteredSelected, filteredEnabledCount, filteredTotalCount, totalCount }"
             >
               <section class="flex gap-2">
-                <button class="btn-primary btn-square text-xl" type="button" title="Add" aria-label="Add" @click="handleAdd">
+                <button class="btn-base btn-square text-xl bg-transparent hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50" type="button" title="Add" aria-label="Add" @click="handleAdd">
                   <span class="i-ph-plus-circle-duotone" aria-hidden="true" />
                 </button>
-                <button class="btn-secondary btn-square text-xl" type="button" title="Export" aria-label="Export"
+                <button class="btn-base btn-square text-xl bg-transparent hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50" type="button" title="Export" aria-label="Export"
                   :disabled="!selectedEnabledBangs.length" @click="openExportConfirm">
                   <span class="i-ph-export-duotone" aria-hidden="true" />
                 </button>
-                <button class="btn-secondary btn-square text-xl" type="button"
+                <button class="btn-base btn-square text-xl bg-transparent hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50" type="button"
                   :title="allFilteredSelected ? 'Deselect all' : 'Select all'"
                   :aria-label="allFilteredSelected ? 'Deselect all' : 'Select all'"
                   :disabled="!filteredBangs.length"
@@ -662,7 +662,7 @@ onUnmounted(() => {
                     :class="allFilteredSelected ? 'i-ph-check-square-duotone' : 'i-ph-check-square-offset-duotone'"
                     aria-hidden="true" />
                 </button>
-                <button class="btn-secondary btn-square text-xl" type="button"
+                <button class="btn-base btn-square text-xl bg-transparent hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50" type="button"
                   :title="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
                   :aria-label="filteredEnabledCount === filteredTotalCount ? 'Disable all' : 'Enable all'"
                   :disabled="!totalCount"
@@ -672,7 +672,7 @@ onUnmounted(() => {
                     :class="filteredEnabledCount === filteredTotalCount ? 'i-ph-toggle-right-duotone' : 'i-ph-toggle-left-duotone'"
                     aria-hidden="true" />
                 </button>
-                <button class="btn-danger btn-square text-xl" type="button" title="Clean" aria-label="Clean"
+                <button class="btn-base btn-square text-xl bg-transparent text-[#8a0018] hover:bg-red-100 dark:(text-[#ff9aaa] hover:bg-red-900/30)" type="button" title="Clean" aria-label="Clean"
                   :disabled="!totalCount" @click="openCleanConfirm">
                   <span class="i-ph-broom-duotone" aria-hidden="true" />
                 </button>

@@ -116,65 +116,33 @@ function handleSelect(index: number) {
 
 <template>
   <div>
-    <section class="flex justify-between items-center gap-2 mb4">
+    <section class="flex justify-between items-center gap-2">
       <div class="relative my-2 flex-1">
         <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center z-1">
-          <BangFilterPopup
-            :filter="filter"
-            :origin-filter="originFilter"
-            :all-count="totalCount"
-            :enabled-count="enabledCount"
-            :disabled-count="totalCount - enabledCount"
-            :manual-count="manualCount"
-            :sources="sources"
-            :source-counts="sourceCounts"
-            @set-filter="handleFilterSet"
-            @set-origin-filter="handleOriginFilterSet"
-          />
+          <BangFilterPopup :filter="filter" :origin-filter="originFilter" :all-count="totalCount"
+            :enabled-count="enabledCount" :disabled-count="totalCount - enabledCount" :manual-count="manualCount"
+            :sources="sources" :source-counts="sourceCounts" @set-filter="handleFilterSet"
+            @set-origin-filter="handleOriginFilterSet" />
         </div>
-        <input
-          v-model="searchQuery"
-          class="input pl-11"
-          type="text"
-          placeholder="Search your bangs..."
-        />
+        <input v-model="searchQuery" class="input pl-11" type="text" placeholder="Search your bangs..." />
       </div>
 
-      <slot
-        name="actions"
-        :filtered-bangs="filteredBangs"
-        :filtered-enabled-count="filteredEnabledCount"
-        :filtered-total-count="filteredTotalCount"
-        :all-filtered-selected="allFilteredSelected"
-        :total-count="totalCount"
-        :enabled-count="enabledCount"
-        :selected-tags="selectedBangTags"
-      />
+      <slot name="actions" :filtered-bangs="filteredBangs" :filtered-enabled-count="filteredEnabledCount"
+        :filtered-total-count="filteredTotalCount" :all-filtered-selected="allFilteredSelected"
+        :total-count="totalCount" :enabled-count="enabledCount" :selected-tags="selectedBangTags" />
     </section>
 
-    <p
-      v-if="bangs.length === 0"
-      class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])"
-    >
+    <p v-if="bangs.length === 0"
+      class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])">
       No custom bangs yet.
     </p>
     <template v-else>
-      <p
-        v-if="filteredBangs.length === 0"
-        class="mt-4.5 p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])"
-      >
+      <p v-if="filteredBangs.length === 0"
+        class="p-4 border border-dashed rounded text-center text-[#666] dark:(text-[#aaa] border-[#3d3d3d])">
         No bangs match this filter.
       </p>
-      <BangList
-        v-else
-        :custom-bangs="filteredBangs"
-        :resolutions="resolutions"
-        :selected-bang-tags="selectedBangTags"
-        :show-actions="showActions"
-        @toggle-enabled="handleToggleEnabled"
-        @edit="handleEdit"
-        @select="handleSelect"
-      />
+      <BangList v-else :custom-bangs="filteredBangs" :resolutions="resolutions" :selected-bang-tags="selectedBangTags"
+        :show-actions="showActions" @toggle-enabled="handleToggleEnabled" @edit="handleEdit" @select="handleSelect" />
       <p class="mt-2 text-right text-xs text-neutral-400 dark:text-neutral-500">
         {{ filteredBangs.length }} of {{ bangs.length }}
         {{ bangs.length === 1 ? "bang" : "bangs" }}

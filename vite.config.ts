@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import VueDevtools from "vite-plugin-vue-devtools";
 import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "node:path";
 import UnoCSS from "unocss/vite";
@@ -8,6 +9,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
   plugins: [
+    VueDevtools(),
     vue({
       template: {
         compilerOptions: {

@@ -45,7 +45,7 @@ watch(items, () => {
             ? 'bg-[#f1f1f1] text-[#777] op-65 hover:op-85 dark:(bg-[#1a1a1a] text-[#666])'
             : 'bg-[#fafafa] text-[#1a1a1a] hover:bg-[#f3f3f3] dark:(bg-[#171717] text-[#d4d4d4] hover:bg-[#1d1d1d])',
           selectedBangTags.has(item.data.bang.t)
-            ? 'bg-neutral-200 text-neutral-950 ring-1 ring-neutral-300 hover:bg-neutral-200 dark:(bg-neutral-700 text-neutral-50 ring-neutral-600 hover:bg-neutral-700)'
+            ? 'bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 hover:bg-neutral-100 dark:(bg-neutral-800 text-neutral-300 ring-neutral-700 hover:bg-neutral-800)'
             : '',
         ]" role="option" tabindex="0" :aria-selected="selectedBangTags.has(item.data.bang.t)"
         :title="selectedBangTags.has(item.data.bang.t) ? 'Selected' : 'Select'" @click="$emit('select', item.index)"

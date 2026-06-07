@@ -259,10 +259,10 @@ onMounted(() => {
             <span class="i-ph-magnifying-glass-duotone text-xl " aria-hidden="true"></span>
           </button>
           <ul v-if="showHints"
-            class="pl0 absolute left-0 right-0 top-full mt-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-md overflow-hidden z-10">
+            class="pl0 absolute left-0 right-0 top-full mt-2 bg-[#fafafa] dark:bg-[#111] border border-[#e5e5e5] dark:border-[#27272a] rounded-md overflow-hidden z-10">
             <li v-for="(hint, i) in hints" :key="hint.key"
               class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer"
-              :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-800/50' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
+              :class="i === hintIndex ? 'bg-neutral-100 dark:bg-neutral-800/60' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/60'"
               @mousedown.prevent="hint.type === 'bang' ? selectHint(hint.bang) : selectHistory(hint.history)"
               @mouseenter="hintIndex = i; hintInteracted = true">
               <template v-if="hint.type === 'bang'">

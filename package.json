@@ -14,7 +14,6 @@
     "preview": "nr build && wrangler dev",
     "deploy": "nr build && wrangler deploy",
     "up": "nlx taze -I major",
-    "typecheck": "vue-tsc --noEmit",
     "prepare": "npx simple-git-hooks"
   },
   "devDependencies": {
@@ -33,8 +32,8 @@
     "typescript": "catalog:cli",
     "unocss": "catalog:",
     "vite": "catalog:cli",
+    "vite-plugin-vue-devtools": "^8.1.2",
     "vitest": "catalog:testing",
-    "vue-tsc": "catalog:cli",
     "wrangler": "catalog:cli"
   },
   "dependencies": {
