@@ -26,7 +26,6 @@ type TabId = (typeof tabs)[number]["id"];
 
 const activeTab = ref<TabId>("manual");
 
-// Manual form
 const tag = ref("");
 const name = ref("");
 const domain = ref("");
@@ -35,7 +34,6 @@ const aliasTarget = ref("");
 const isAlias = ref(false);
 const manualError = ref("");
 
-// File
 const fileInput = shallowRef<HTMLInputElement | null>(null);
 const fileSourceName = ref("");
 const selectedFile = ref<File | null>(null);

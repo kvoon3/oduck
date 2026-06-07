@@ -47,7 +47,6 @@ function onKeydown(e: KeyboardEvent) {
       e.stopPropagation();
       return;
     }
-    // 搜索框可见时，如果焦点不在面板内，阻止事件传到原网页
     if (!panelRef.value || !e.composedPath().includes(panelRef.value)) {
       e.stopImmediatePropagation();
     }

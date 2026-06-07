@@ -1,4 +1,3 @@
-// Types
 export type {
   Bang,
   BangOrigin,
@@ -8,10 +7,6 @@ export type {
 } from './types/custom-bang'
 export type { SelectOption } from './types/select'
 
-// Data
-
-
-// Utils
 export {
   parseQuery,
   stripBangMarker,
@@ -31,11 +26,9 @@ export {
   loadRawBangsFromUrl,
 } from './types/custom-bang'
 
-// Composables
 export { useBang, type BangMatch } from './composables/useBang'
 export { useBangProcessor } from './composables/useBangProcessor'
 
-// Components
 export { default as BaseModal } from './components/BaseModal.vue'
 export { default as BaseSelect } from './components/BaseSelect.vue'
 export { default as BangSearch } from './components/BangSearch.vue'

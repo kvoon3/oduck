@@ -35,7 +35,6 @@ interface SourceCard {
 const cards = computed<SourceCard[]>(() => {
   const result: SourceCard[] = [];
 
-  // Recommended first
   for (const rec of recommendedSources) {
     if (!props.sources.some(s => s.name === rec.name)) {
       result.push({
