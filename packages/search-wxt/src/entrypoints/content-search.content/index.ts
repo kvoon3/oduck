@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import "virtual:uno.css";
+import "../../popup.css";
 
 function getCustomBangs(): string | null {
   try {

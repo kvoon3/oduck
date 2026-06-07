@@ -1,78 +1,90 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { BangManagePanel, parseCustomBangs } from "@oduck/ui";
-import type { CustomBang } from "@oduck/ui";
+import { computed, onMounted, ref } from "vue";
+import {
+  DEFAULT_SHORTCUT_SETTINGS,
+  SETTINGS_STORAGE_KEY,
+  normalizeShortcutKey,
+  parseShortcutSettings,
+  type ShortcutSettings,
+} from "../../settings";
 
-const customBangs = ref<CustomBang[]>([]);
+const customPageUrl = "https://oduck.kvoon.me/custom";
+const settings = ref<ShortcutSettings>({ ...DEFAULT_SHORTCUT_SETTINGS });
+const saved = ref(false);
 
-const allBangs = computed<CustomBang[]>(() => customBangs.value);
+const hasDuplicate = computed(() => settings.value.replaceKey === settings.value.newTabKey);
 
-const resolutions = computed(() => {
-  const map: Record<string, string> = {};
-  for (const b of allBangs.value) map[b.t] = b.s;
-  return map;
-});
-
-async function loadCustomBangs() {
+async function loadSettings() {
   try {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id) {
-      const res = await browser.tabs.sendMessage(tab.id, { type: "get-custom-bangs" });
-      if (res?.customBangs) {
-        customBangs.value = parseCustomBangs(JSON.parse(res.customBangs));
-        return;
-      }
-    }
+    const result = await browser.storage.local.get(SETTINGS_STORAGE_KEY);
+    settings.value = parseShortcutSettings(result[SETTINGS_STORAGE_KEY]);
   } catch {
-    // fall through
-  }
-
-  try {
-    const result = await browser.storage.local.get("custom-bangs");
-    const saved = result["custom-bangs"];
-    if (saved) {
-      customBangs.value = parseCustomBangs(typeof saved === "string" ? JSON.parse(saved) : saved);
-    }
-  } catch {
-    // ignore
+    settings.value = { ...DEFAULT_SHORTCUT_SETTINGS };
   }
 }
 
-async function openManager() {
-  void browser.tabs.create({ url: "https://oduck.kvoon.me/custom" });
+async function saveSettings() {
+  if (hasDuplicate.value) return;
+  await browser.storage.local.set({ [SETTINGS_STORAGE_KEY]: { ...settings.value } });
+  saved.value = true;
+  window.setTimeout(() => {
+    saved.value = false;
+  }, 1200);
+}
+
+function setShortcut(kind: keyof ShortcutSettings, value: string) {
+  settings.value[kind] = normalizeShortcutKey(value, DEFAULT_SHORTCUT_SETTINGS[kind]);
+  void saveSettings();
+}
+
+async function openCustomPage() {
+  await browser.tabs.create({ url: customPageUrl });
 }
 
 onMounted(() => {
-  void loadCustomBangs();
+  void loadSettings();
 });
 </script>
 
 <template>
-  <div class="w-[420px] p-4 flex flex-col gap-3 bg-white dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100">
-    <div class="flex items-center gap-2">
-      <span class="i-ph-duck-duotone text-xl text-neutral-600 dark:text-neutral-400" />
-      <h1 class="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-        Bangs
-      </h1>
-      <span class="ml-auto text-xs text-neutral-400 dark:text-neutral-500">
-        {{ allBangs.length }} bangs
-      </span>
-    </div>
+  <main class="w-[320px] bg-white p-4 text-neutral-900 dark:bg-[#0a0a0a] dark:text-neutral-100">
+    <section class="flex flex-col gap-3">
+      <label class="flex items-center justify-between gap-3">
+        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Current tab</span>
+        <input
+          :value="settings.replaceKey"
+          class="input h-9 w-16 text-center"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Current tab shortcut"
+          @input="setShortcut('replaceKey', ($event.target as HTMLInputElement).value)"
+        />
+      </label>
 
-    <BangManagePanel
-      :bangs="allBangs"
-      :sources="[]"
-      :resolutions="resolutions"
-    >
-      <template #actions="">
-        <button
-          class="btn btn-icon-transparent focus-ring h-9 w-9"
-          aria-label="Open Manager"
-          @click="openManager"
-        >
-          <span class="i-ph-gear-duotone text-[18px]" aria-hidden="true" />
-        </button>
-      </template>
-    </BangManagePanel>
-  </div>
+      <label class="flex items-center justify-between gap-3">
+        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">New tab</span>
+        <input
+          :value="settings.newTabKey"
+          class="input h-9 w-16 text-center"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="New tab shortcut"
+          @input="setShortcut('newTabKey', ($event.target as HTMLInputElement).value)"
+        />
+      </label>
+
+      <p v-if="hasDuplicate" class="error-text m-0 text-xs">
+        Shortcuts must be different.
+      </p>
+      <p v-else-if="saved" class="m-0 text-xs text-neutral-400 dark:text-neutral-500">
+        Saved.
+      </p>
+
+      <button class="btn-primary mt-1 w-full py-2" type="button" @click="openCustomPage">
+        Custom Page
+      </button>
+    </section>
+  </main>
 </template>

@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { BangSearch, parseCustomBangs, type CustomBang } from "@oduck/ui";
+import {
+  DEFAULT_SHORTCUT_SETTINGS,
+  SETTINGS_STORAGE_KEY,
+  parseShortcutSettings,
+  type ShortcutSettings,
+} from "../../settings";
 
 const visible = ref(false);
+const mode = ref<"replace" | "new-tab">("replace");
 const customBangs = ref<CustomBang[]>([]);
+const shortcutSettings = ref<ShortcutSettings>({ ...DEFAULT_SHORTCUT_SETTINGS });
 
 const allBangs = computed<CustomBang[]>(() => customBangs.value);
 
@@ -13,23 +21,39 @@ function updateTheme() {
   isDark.value = window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.isContentEditable
+  );
+}
+
+function openSearch(nextMode: "replace" | "new-tab") {
+  mode.value = nextMode;
+  visible.value = true;
+}
+
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === "e" && !visible.value) {
-    const target = e.target as HTMLElement | null;
-    if (
-      target &&
-      (target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable)
-    ) {
-      return;
-    }
-    e.preventDefault();
-    visible.value = true;
+  if (visible.value && e.key === "Escape") {
+    visible.value = false;
+    return;
   }
 
-  if (e.key === "Escape" && visible.value) {
-    visible.value = false;
+  if (visible.value || isEditableTarget(e.target)) {
+    return;
+  }
+
+  if (e.key === shortcutSettings.value.replaceKey) {
+    e.preventDefault();
+    openSearch("replace");
+    return;
+  }
+
+  if (e.key === shortcutSettings.value.newTabKey) {
+    e.preventDefault();
+    openSearch("new-tab");
   }
 }
 
@@ -47,16 +71,34 @@ function loadCustomBangs() {
   }
 }
 
+async function loadShortcutSettings() {
+  try {
+    const result = await browser.storage.local.get(SETTINGS_STORAGE_KEY);
+    shortcutSettings.value = parseShortcutSettings(result[SETTINGS_STORAGE_KEY]);
+  } catch {
+    shortcutSettings.value = { ...DEFAULT_SHORTCUT_SETTINGS };
+  }
+}
+
+function onStorageChanged(changes: Record<string, browser.storage.StorageChange>) {
+  if (changes[SETTINGS_STORAGE_KEY]) {
+    shortcutSettings.value = parseShortcutSettings(changes[SETTINGS_STORAGE_KEY].newValue);
+  }
+}
+
 onMounted(() => {
   updateTheme();
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
   document.addEventListener("keydown", onKeydown, true);
+  browser.storage.local.onChanged.addListener(onStorageChanged);
   loadCustomBangs();
+  void loadShortcutSettings();
 });
 
 onUnmounted(() => {
   window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", updateTheme);
   document.removeEventListener("keydown", onKeydown, true);
+  browser.storage.local.onChanged.removeListener(onStorageChanged);
 });
 </script>
 
@@ -64,7 +106,7 @@ onUnmounted(() => {
   <div v-if="visible" :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
     @click="onBackdropClick">
     <div class="w-[560px]" @click.stop>
-      <BangSearch :all-bangs="allBangs" mode="new-tab" autofocus />
+      <BangSearch :all-bangs="allBangs" :mode="mode" autofocus />
     </div>
   </div>
 </template>
