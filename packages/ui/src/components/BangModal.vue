@@ -99,7 +99,6 @@ function handleSubmit() {
       {
         c: "Custom",
         d: cleanDomain.value,
-        enabled: true,
         r: 0,
         s: cleanName,
         sc: "Custom",
@@ -111,7 +110,11 @@ function handleSubmit() {
 
     if (!parsed) throw new Error("Custom bang is invalid.");
 
-    emit("submit", parsed);
+    const result = props.editingBang
+      ? { ...props.editingBang, ...parsed }
+      : parsed;
+
+    emit("submit", result);
   } catch (err) {
     error.value =
       err instanceof Error ? err.message : "Custom bang config is invalid.";
