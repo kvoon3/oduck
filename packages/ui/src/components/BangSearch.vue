@@ -15,7 +15,8 @@ const props = defineProps<{
 
 const input = ref("");
 const inputRef = ref<HTMLInputElement | null>(null);
-const hintIndex = ref(0);
+const hintIndex = ref(-1);
+const hintInteracted = ref(false);
 const hintsHidden = ref(false);
 const searchHistory = ref<SearchHistoryEntry[]>([]);
 
@@ -122,7 +123,8 @@ const hints = computed(() => {
 });
 
 watch([currentToken, () => testMatch.value.cleanQuery], () => {
-  hintIndex.value = 0;
+  hintIndex.value = -1;
+  hintInteracted.value = false;
   hintsHidden.value = false;
 });
 
@@ -131,17 +133,20 @@ const showHints = computed(() => !hintsHidden.value && hints.value.length > 0);
 function selectHint(bang: Bang) {
   input.value = createQueryWithBang(bang);
   hintsHidden.value = true;
-  hintIndex.value = 0;
+  hintIndex.value = -1;
+  hintInteracted.value = false;
 }
 
 function selectHistory(history: SearchHistoryEntry) {
   input.value = history.query;
   hintsHidden.value = true;
-  hintIndex.value = 0;
+  hintIndex.value = -1;
+  hintInteracted.value = false;
 }
 
 function selectCurrentHint() {
-  const hint = hints.value[hintIndex.value];
+  const index = hintIndex.value === -1 ? 0 : hintIndex.value;
+  const hint = hints.value[index];
   if (!hint) return;
 
   if (hint.type === "bang") {
@@ -154,7 +159,8 @@ function selectCurrentHint() {
 function resetInputAfterNavigation() {
   input.value = "";
   hintsHidden.value = true;
-  hintIndex.value = 0;
+  hintIndex.value = -1;
+  hintInteracted.value = false;
 }
 
 function openUrl(url: string) {
@@ -179,18 +185,25 @@ function onKeydown(e: KeyboardEvent) {
   if (!showHints.value) return;
   if (e.key === "ArrowDown") {
     e.preventDefault();
-    hintIndex.value = (hintIndex.value + 1) % hints.value.length;
+    hintInteracted.value = true;
+    hintIndex.value =
+      hintIndex.value >= hints.value.length - 1 ? -1 : hintIndex.value + 1;
   } else if (e.key === "ArrowUp") {
     e.preventDefault();
-    hintIndex.value = (hintIndex.value - 1 + hints.value.length) % hints.value.length;
+    hintInteracted.value = true;
+    hintIndex.value =
+      hintIndex.value === -1 ? hints.value.length - 1 : hintIndex.value - 1;
   } else if (e.key === "Tab") {
     e.preventDefault();
+    hintInteracted.value = true;
     selectCurrentHint();
   } else if (e.key === "Enter") {
     const hint = hints.value[hintIndex.value];
     if (!hint) return;
 
     if (hint.type === "history") {
+      if (!hintInteracted.value) return;
+
       e.preventDefault();
       submitHistory(hint.history);
       return;
@@ -198,6 +211,7 @@ function onKeydown(e: KeyboardEvent) {
 
     if (hint.bang.t !== currentToken.value) {
       e.preventDefault();
+      hintInteracted.value = true;
       selectHint(hint.bang);
     }
   } else if (e.key === "Escape") {
@@ -249,7 +263,8 @@ onMounted(() => {
             <li v-for="(hint, i) in hints" :key="hint.key"
               class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer"
               :class="i === hintIndex ? 'bg-neutral-200 dark:bg-neutral-800/50' : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'"
-              @mousedown.prevent="hint.type === 'bang' ? selectHint(hint.bang) : selectHistory(hint.history)" @mouseenter="hintIndex = i">
+              @mousedown.prevent="hint.type === 'bang' ? selectHint(hint.bang) : selectHistory(hint.history)"
+              @mouseenter="hintIndex = i; hintInteracted = true">
               <template v-if="hint.type === 'bang'">
                 <span class="text-neutral-500 dark:text-neutral-400 text-xs w-12 text-right truncate shrink-0">{{ hint.bang.sc
                 }}</span>
