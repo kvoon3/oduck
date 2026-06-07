@@ -35,9 +35,13 @@ function openSearch(nextMode: "replace" | "new-tab") {
   visible.value = true;
 }
 
+function closeSearch() {
+  visible.value = false;
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (visible.value && e.key === "Escape") {
-    visible.value = false;
+    closeSearch();
     return;
   }
 
@@ -58,7 +62,14 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function onBackdropClick() {
-  visible.value = false;
+  closeSearch();
+}
+
+function onPanelKeydown(e: KeyboardEvent) {
+  if (e.key !== "Escape") return;
+  e.preventDefault();
+  e.stopPropagation();
+  closeSearch();
 }
 
 function loadCustomBangs() {
@@ -104,7 +115,8 @@ onUnmounted(() => {
 
 <template>
   <div v-if="visible" :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
-    @click="onBackdropClick">
+    @click="onBackdropClick"
+    @keydown.capture="onPanelKeydown">
     <div class="w-[560px]" @click.stop>
       <BangSearch :all-bangs="allBangs" :mode="mode" autofocus />
     </div>
