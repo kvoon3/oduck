@@ -9,6 +9,7 @@ import {
 } from "../../settings";
 
 const visible = ref(false);
+const panelRef = ref<HTMLDivElement | null>(null);
 const mode = ref<"replace" | "new-tab">("replace");
 const customBangs = ref<CustomBang[]>([]);
 const shortcutSettings = ref<ShortcutSettings>({ ...DEFAULT_SHORTCUT_SETTINGS });
@@ -40,12 +41,20 @@ function closeSearch() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (visible.value && e.key === "Escape") {
-    closeSearch();
+  if (visible.value) {
+    if (e.key === "Escape") {
+      closeSearch();
+      e.stopPropagation();
+      return;
+    }
+    // 搜索框可见时，如果焦点不在面板内，阻止事件传到原网页
+    if (!panelRef.value?.contains(e.target as Node)) {
+      e.stopImmediatePropagation();
+    }
     return;
   }
 
-  if (visible.value || isEditableTarget(e.target)) {
+  if (isEditableTarget(e.target)) {
     return;
   }
 
@@ -62,13 +71,6 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function onBackdropClick() {
-  closeSearch();
-}
-
-function onPanelKeydown(e: KeyboardEvent) {
-  if (e.key !== "Escape") return;
-  e.preventDefault();
-  e.stopPropagation();
   closeSearch();
 }
 
@@ -114,9 +116,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="visible" :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
+  <div ref="panelRef" v-if="visible" :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
     @click="onBackdropClick"
-    @keydown.capture="onPanelKeydown">
+    @keydown.stop>
     <div class="w-[560px]" @click.stop>
       <BangSearch :all-bangs="allBangs" :mode="mode" autofocus />
     </div>
