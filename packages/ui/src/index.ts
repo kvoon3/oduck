@@ -9,7 +9,7 @@ export type {
 export type { SelectOption } from './types/select'
 
 // Data
-export { bangs } from './bangs'
+
 
 // Utils
 export {

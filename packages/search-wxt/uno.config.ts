@@ -9,9 +9,7 @@ export default {
         "src/**/*.ts",
         "../ui/src/**/*.{vue,ts}",
       ],
-      exclude: [
-        "../ui/src/bangs.ts",
-      ],
+      exclude: [],
     },
   },
 };

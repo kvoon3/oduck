@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { BangSearch, parseCustomBangs, bangs, type CustomBang } from "@oduck/ui";
+import { BangSearch, parseCustomBangs, type CustomBang } from "@oduck/ui";
 import {
   DEFAULT_SHORTCUT_SETTINGS,
   SETTINGS_STORAGE_KEY,
@@ -14,7 +14,7 @@ const mode = ref<"replace" | "new-tab">("replace");
 const customBangs = ref<CustomBang[]>([]);
 const shortcutSettings = ref<ShortcutSettings>({ ...DEFAULT_SHORTCUT_SETTINGS });
 
-const allBangs = computed<CustomBang[]>(() => [...bangs, ...customBangs.value]);
+const allBangs = computed<CustomBang[]>(() => customBangs.value);
 
 const isDark = ref(false);
 
@@ -93,7 +93,7 @@ async function loadShortcutSettings() {
   }
 }
 
-function onStorageChanged(changes: Record<string, browser.storage.StorageChange>) {
+function onStorageChanged(changes: Record<string, Browser.storage.StorageChange>) {
   if (changes[SETTINGS_STORAGE_KEY]) {
     shortcutSettings.value = parseShortcutSettings(changes[SETTINGS_STORAGE_KEY].newValue);
   }
@@ -116,9 +116,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="panelRef" v-if="visible" :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
-    @click="onBackdropClick"
-    @keydown.stop>
+  <div ref="panelRef" v-if="visible"
+    :class="['fixed inset-0 z-[2147483647] flex items-start justify-center pt-[15vh]', isDark ? 'dark' : '']"
+    @click="onBackdropClick" @keydown.stop>
     <div class="w-[560px]" @click.stop>
       <BangSearch :all-bangs="allBangs" :mode="mode" autofocus />
     </div>
