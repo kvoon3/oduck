@@ -8,6 +8,9 @@ export type {
 } from './types/custom-bang'
 export type { SelectOption } from './types/select'
 
+// Data
+export { bangs } from './bangs'
+
 // Utils
 export {
   parseQuery,

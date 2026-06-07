@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { BangSearch, parseCustomBangs, type CustomBang } from "@oduck/ui";
+import { BangSearch, parseCustomBangs, bangs, type CustomBang } from "@oduck/ui";
 import {
   DEFAULT_SHORTCUT_SETTINGS,
   SETTINGS_STORAGE_KEY,
@@ -14,7 +14,7 @@ const mode = ref<"replace" | "new-tab">("replace");
 const customBangs = ref<CustomBang[]>([]);
 const shortcutSettings = ref<ShortcutSettings>({ ...DEFAULT_SHORTCUT_SETTINGS });
 
-const allBangs = computed<CustomBang[]>(() => customBangs.value);
+const allBangs = computed<CustomBang[]>(() => [...bangs, ...customBangs.value]);
 
 const isDark = ref(false);
 
