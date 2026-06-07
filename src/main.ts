@@ -6,6 +6,11 @@ import {
   parseCustomBangs,
 } from "./custom-bang";
 import { addSearchHistory } from "./search-history";
+import {
+  checkExtensionStatus,
+  onExtensionStatusChange,
+  type ExtensionStatus,
+} from "./extension-status";
 
 import 'virtual:uno.css'
 
@@ -63,6 +68,35 @@ function downloadJson(filename: string, value: unknown) {
   URL.revokeObjectURL(url);
 }
 
+function renderExtensionSection(status: ExtensionStatus): string {
+  const connected = status === "connected";
+  const cardBg = "bg-neutral-50 dark:bg-neutral-900";
+  const border = "border border-neutral-200 dark:border-neutral-800";
+
+  return `
+    <section id="extension-intro" class="${cardBg} ${border} rounded-lg p-4 text-left">
+      <div class="flex items-start gap-3">
+        <span class="i-ph-puzzle-piece-duotone text-2xl text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true"></span>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-base font-medium m-0 mb-1">Browser Extension</h2>
+          <p class="text-sm text-neutral-500 m-0 mb-3">
+            ${connected
+              ? 'The Oduck extension is active. Press <kbd class="px-1 py-0.5 text-xs bg-neutral-200 dark:bg-neutral-700 rounded">e</kbd> on any page to open the bang search.'
+              : "Install the Oduck browser extension for quick bang search on any page with a single keypress."
+            }
+          </p>
+          <div class="flex items-center gap-2">
+            <span id="extension-status-badge" class="inline-flex items-center gap-1.5 text-sm text-neutral-400">
+              <span class="${connected ? "i-ph-check-circle-duotone text-green-600" : "i-ph-plug-duotone text-neutral-400"} text-lg" aria-hidden="true"></span>
+              <span>${connected ? "Extension connected" : "Extension not installed"}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
@@ -102,6 +136,7 @@ function noSearchDefaultPageRender() {
             </button>
           </div>
         </section>
+        ${renderExtensionSection("checking")}
         <section>
           <p>
             <a href="/search.html" class="link link-active">Oduck Search</a>
@@ -116,6 +151,28 @@ function noSearchDefaultPageRender() {
       <oduck-footer></oduck-footer>
     </div>
   `;
+
+  // Wire up live extension-status updates
+  const introSection = app.querySelector<HTMLElement>("#extension-intro");
+  const statusBadge = app.querySelector<HTMLElement>("#extension-status-badge");
+
+  if (introSection && statusBadge) {
+    onExtensionStatusChange((s) => {
+      const connected = s === "connected";
+      const iconHtml = connected
+        ? `<span class="i-ph-check-circle-duotone text-green-600 text-lg" aria-hidden="true"></span>`
+        : `<span class="i-ph-plug-duotone text-neutral-400 text-lg" aria-hidden="true"></span>`;
+      const label = connected ? "Extension connected" : "Extension not installed";
+      statusBadge.innerHTML = `${iconHtml}<span>${label}</span>`;
+
+      const desc = introSection.querySelector<HTMLParagraphElement>("p");
+      if (desc) {
+        desc.innerHTML = connected
+          ? 'The Oduck extension is active. Press <kbd class="px-1 py-0.5 text-xs bg-neutral-200 dark:bg-neutral-700 rounded">e</kbd> on any page to open the bang search.'
+          : "Install the Oduck browser extension for quick bang search on any page with a single keypress.";
+      }
+    });
+  }
 
   const copyButton = app.querySelector<HTMLButtonElement>('button[aria-label="Copy"]')!;
   const copyIcon = copyButton.querySelector<HTMLSpanElement>(".copy-icon")!;
@@ -159,7 +216,6 @@ function noSearchDefaultPageRender() {
     ];
     downloadJson("oduck.raycast-quicklink.json", quicklink);
   });
-
 }
 
 function getBangredirectUrl() {
@@ -199,7 +255,11 @@ function doRedirect() {
   syncAllBangs();
 
   const searchUrl = getBangredirectUrl();
-  if (!searchUrl) return;
+  if (!searchUrl) {
+    // No search query — we're on the default page. Check extension status.
+    checkExtensionStatus();
+    return;
+  }
   window.location.replace(searchUrl);
 }
 

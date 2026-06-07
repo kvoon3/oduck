@@ -18,10 +18,46 @@ async function syncToExtensionStorage() {
   }
 }
 
+function parseWindowMessageData(data: unknown): Record<string, unknown> | undefined {
+  return typeof data === "object" && data !== null
+    ? Object.fromEntries(Object.entries(data))
+    : undefined;
+}
+
+function handlePageMessage(event: MessageEvent) {
+  if (event.source !== window) return;
+  const data = parseWindowMessageData(event.data);
+  if (data?.source !== "oduck-web" || data.type !== "ping-extension") return;
+
+  window.postMessage(
+    {
+      source: "oduck-extension",
+      type: "pong-extension",
+      requestId: data.requestId,
+    },
+    window.location.origin,
+  );
+}
+
+function setupPageBridge(): () => void {
+  window.addEventListener("message", handlePageMessage);
+  window.postMessage(
+    {
+      source: "oduck-extension",
+      type: "ready-extension",
+    },
+    window.location.origin,
+  );
+
+  return () => window.removeEventListener("message", handlePageMessage);
+}
+
 export default defineContentScript({
   matches: ["<all_urls>"],
   cssInjectionMode: "ui",
   async main(ctx) {
+    const cleanupPageBridge = setupPageBridge();
+
     // Sync localStorage → extension storage on load (keeps background cache fresh)
     void syncToExtensionStorage();
 
@@ -56,6 +92,7 @@ export default defineContentScript({
     ui.mount();
 
     ctx.onInvalidated(() => {
+      cleanupPageBridge();
       browser.runtime.onMessage.removeListener(handleMessage);
     });
   },
