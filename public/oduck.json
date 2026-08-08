@@ -88,5 +88,14 @@
     "sc": "Dev",
     "t": "pi",
     "u": "https://pi.dev/packages?name={{{s}}}"
+  },
+  {
+    "c": "Media",
+    "d": "bangumi.tv",
+    "r": 0,
+    "s": "Bangumi 番组计划",
+    "sc": "Media",
+    "t": "bgm",
+    "u": "https://bangumi.tv/subject_search/{{{s}}}?cat=all"
   }
 ]
