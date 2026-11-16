@@ -7,7 +7,8 @@
     "dev": "wxt",
     "build": "wxt build",
     "zip": "wxt zip",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "prepare": "wxt prepare"
   },
   "dependencies": {
     "@oduck/ui": "workspace:*",
@@ -20,6 +21,6 @@
     "oxlint": "catalog:cli",
     "typescript": "catalog:cli",
     "unocss": "catalog:",
-    "wxt": "^0.20.26"
+    "wxt": "^0.21.5"
   }
 }

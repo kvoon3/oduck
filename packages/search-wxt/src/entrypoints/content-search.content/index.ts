@@ -62,18 +62,7 @@ export default defineContentScript({
     void syncToExtensionStorage();
 
     // Respond to popup / background requests for the latest localStorage data
-    const handleMessage = (message: unknown): Promise<{ customBangs: string | null }> | undefined => {
-      if (
-        typeof message === "object" &&
-        message !== null &&
-        "type" in message &&
-        (message as Record<string, unknown>).type === "get-custom-bangs"
-      ) {
-        return Promise.resolve({ customBangs: getCustomBangs() });
-      }
-      return undefined;
-    };
-    browser.runtime.onMessage.addListener(handleMessage);
+    browser.runtime.onMessage.addListener(handleGetCustomBangsMessage);
 
     const ui = await createShadowRootUi(ctx, {
       name: "oduck-search",
@@ -93,7 +82,21 @@ export default defineContentScript({
 
     ctx.onInvalidated(() => {
       cleanupPageBridge();
-      browser.runtime.onMessage.removeListener(handleMessage);
+      browser.runtime.onMessage.removeListener(handleGetCustomBangsMessage);
     });
   },
 });
+
+function handleGetCustomBangsMessage(
+  message: unknown,
+): Promise<{ customBangs: string | null }> | undefined {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "type" in message &&
+    (message as Record<string, unknown>).type === "get-custom-bangs"
+  ) {
+    return Promise.resolve({ customBangs: getCustomBangs() });
+  }
+  return undefined;
+}
