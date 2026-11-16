@@ -4,6 +4,7 @@ import { parseQuery } from "./bang-query";
 import {
   type CustomBang,
   parseCustomBangs,
+  fetchDefaultBangs,
 } from "./custom-bang";
 import { addSearchHistory } from "./search-history";
 import {
@@ -227,7 +228,8 @@ function getBangredirectUrl() {
   }
 
   const parsed = parseQuery(query);
-  const selectedBang = allBangs.find((b) => b.t === parsed.bang) ?? null;
+  const selectedBang
+    = allBangs.find(b => b.t === parsed.bang && b.enabled !== false) ?? null;
   const cleanQuery = parsed.cleanQuery;
 
   if (selectedBang) {
@@ -250,8 +252,13 @@ function getBangredirectUrl() {
   return fallbackUrl;
 }
 
-function doRedirect() {
+async function doRedirect() {
   customBangs = getSavedCustomBangs() ?? [];
+  if (customBangs.length === 0) {
+    // Fresh browser: no configured bangs yet. Fall back to the bundled default
+    // sources so `?q=!bang query` works without visiting the custom page first.
+    customBangs = await fetchDefaultBangs();
+  }
   syncAllBangs();
 
   const searchUrl = getBangredirectUrl();
@@ -263,4 +270,4 @@ function doRedirect() {
   window.location.replace(searchUrl);
 }
 
-doRedirect();
+void doRedirect();

@@ -66,6 +66,43 @@ export function normalizeCustomBangSourceUrl(sourceUrl: string): string {
   return url.toString();
 }
 
+/**
+ * Default bang sources shipped with the site (served from /public).
+ * Oduck presets come first so they win over the unduck set on duplicate keys.
+ */
+export const DEFAULT_BANG_SOURCE_PATHS = [
+  "/oduck.json",
+  "/unduck.json",
+] as const;
+
+/**
+ * Load the default bangs for browsers that have no saved bangs yet, so
+ * `?q=!bang query` redirects work out of the box. Sources that fail to load
+ * are skipped; duplicates are removed keeping the first occurrence.
+ */
+export async function fetchDefaultBangs(
+  sourcePaths: readonly string[] = DEFAULT_BANG_SOURCE_PATHS,
+): Promise<CustomBang[]> {
+  const settled = await Promise.allSettled(sourcePaths.map(async (path) => {
+    const response = await fetch(path);
+    if (!response.ok)
+      throw new Error(`Failed to load default bang source ${path} (${response.status}).`);
+    return parseCustomBangs(await response.json());
+  }));
+
+  const seen = new Set<string>();
+  const bangs: CustomBang[] = [];
+  for (const result of settled) {
+    if (result.status !== "fulfilled") continue;
+    for (const bang of result.value) {
+      if (seen.has(bang.t)) continue;
+      seen.add(bang.t);
+      bangs.push(bang);
+    }
+  }
+  return bangs;
+}
+
 export async function loadCustomBangsFromUrl(sourceUrl: string): Promise<CustomBang[]> {
   const response = await fetch(normalizeCustomBangSourceUrl(sourceUrl), {
     cache: "no-store",

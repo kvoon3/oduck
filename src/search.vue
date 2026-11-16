@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from "vue";
 import {
   type CustomBang,
   parseCustomBangs,
+  fetchDefaultBangs,
 } from "./custom-bang";
 import { BangSearch } from "@oduck/ui";
 
@@ -20,8 +21,10 @@ function loadFromStorage(): CustomBang[] {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   customBangs.value = loadFromStorage();
+  if (customBangs.value.length === 0)
+    customBangs.value = await fetchDefaultBangs();
 });
 </script>
 

@@ -10,7 +10,7 @@
 - Search autocomplete
 
 ```sh
-https://oduck.kvoone.me?q=%s 
+https://oduck.kvoon.me?q=%s
 ```
 
 ## Credits

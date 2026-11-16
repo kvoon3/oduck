@@ -91,11 +91,11 @@
   },
   {
     "c": "Media",
-    "d": "bangumi.tv",
+    "d": "bgm.tv",
     "r": 0,
     "s": "Bangumi 番组计划",
     "sc": "Media",
     "t": "bgm",
-    "u": "https://bangumi.tv/subject_search/{{{s}}}?cat=all"
+    "u": "https://bgm.tv/subject_search/{{{s}}}?cat=all"
   }
 ]
